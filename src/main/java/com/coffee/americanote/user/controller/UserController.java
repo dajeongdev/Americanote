@@ -5,10 +5,7 @@ import com.coffee.americanote.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -18,13 +15,11 @@ public class UserController {
 
     @GetMapping("/cafe")
     ResponseEntity<Void> findAllCafe() {
-        System.out.println("find all cafe");
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/save")
     ResponseEntity<User> saveUser(@RequestBody User user) {
-        System.out.println("save user");
         return new ResponseEntity<>(userRepository.save(user), HttpStatus.OK);
     }
 }
