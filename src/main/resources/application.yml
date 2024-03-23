@@ -1,1 +1,12 @@
-spring.application.name=americano
+# 서버 포트
+server:
+  port: 8009
+
+spring:
+  jpa:
+    show-sql: true     # 콘솔에 JPA 실행 쿼리 출력
+    generate-ddl: true # Entity 어노테이션 클래스의 ddl 생성 후 실행
+    database: MYSQL
+  profiles:
+    include:
+      - database
