@@ -1,4 +1,4 @@
-package com.awesome.americano;
+package com.coffee.americanote;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
