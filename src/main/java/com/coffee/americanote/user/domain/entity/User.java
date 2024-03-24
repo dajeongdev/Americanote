@@ -1,6 +1,6 @@
 package com.coffee.americanote.user.domain.entity;
 
-import com.coffee.americanote.common.BaseEntity;
+import com.coffee.americanote.common.entity.BaseEntity;
 import com.coffee.americanote.user.domain.request.UserRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
