@@ -58,9 +58,6 @@ public class CrawlingCafe {
         Thread.sleep(1500);
         inputSearch.sendKeys(Keys.ENTER);
         Thread.sleep(1500);
-        /*// 검색어 초기화
-        WebElement button = driver.findElement(By.className("btn_clear"));
-        button.click();*/
 
         // 데이터가 iframe 안에 있는 경우 (HTML 안 HTML) 이동
         driver.switchTo().frame("searchIframe");
@@ -200,12 +197,5 @@ public class CrawlingCafe {
             System.out.println(e.getMessage());
             return "";
         }
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-        CrawlingCafe crawlingCafe = new CrawlingCafe();
-
-        crawlingCafe.process();
-        System.out.println(crawlingCafe.coffeeInfoms.size());
     }
 }
