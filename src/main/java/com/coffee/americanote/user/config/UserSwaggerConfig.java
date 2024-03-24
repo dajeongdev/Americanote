@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class UserSwaggerConfig {
+class UserSwaggerConfig {
 
     @Bean
-    public OpenApiCustomizer userOpenApiCustomizer() {
+    OpenApiCustomizer userOpenApiCustomizer() {
         return openApi -> openApi
                 .addServersItem(
                         new Server()
@@ -25,7 +25,7 @@ public class UserSwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi userDocs() {
+    GroupedOpenApi userDocs() {
         return GroupedOpenApi.builder()
                 .group("User API")
                 .packagesToScan("com.coffee.americanote.user.controller")
