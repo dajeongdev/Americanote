@@ -41,4 +41,4 @@ out/
 application-database.yml
 
 # Naver Token
-navertoken.properties
+application-naver-token.properties
