@@ -13,7 +13,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
 @Service
-@PropertySource("classpath:application-naver-token.properties")
+@PropertySource("classpath:application-naver-token.yml")
 public class AddressToCoordinate {
 
     @Value("${CLIENT_ID}")
@@ -38,8 +38,6 @@ public class AddressToCoordinate {
             // Geocoding 개요에 나와있는 요청 헤더 입력.
             con.setRequestProperty("X-NCP-APIGW-API-KEY-ID", clientId);
             con.setRequestProperty("X-NCP-APIGW-API-KEY", clientSecret);
-            System.out.println("clientId = " + clientId);
-            System.out.println("clientSecret = " + clientSecret);
 
             // 요청 결과 확인. 정상 호출인 경우 200
             int responseCode = con.getResponseCode();
