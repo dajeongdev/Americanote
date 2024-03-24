@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
@@ -14,16 +17,23 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class CrawlingCafe {
 
-    private WebDriver driver;
+    private final AddressToCoordinate addressToCoordinate;
 
+    public CrawlingCafe(AddressToCoordinate addressToCoordinate) {
+        this.addressToCoordinate = addressToCoordinate;
+    }
+
+    private WebDriver driver;
     private static final String LOCATION = "연남동";
     private static final String KEYWORD = "카페";
     private static final String URL = "https://map.naver.com/v5/";
-    private static final List<String> MENU_NAMES = List.of("아메리카노", "커피", "americano", "coffee");
 
+    private static final List<String> MENU_NAMES = List.of("아메리카노", "커피", "americano", "coffee");
     // 매장 정보들을 저장할 해시맵
+
     Map<String, ArrayList<String>> coffeeInfoms = new HashMap<>();
 
     public void process() throws InterruptedException {
@@ -133,27 +143,46 @@ public class CrawlingCafe {
                 Thread.sleep(2000);
 
                 // 메뉴 정보 가져오기
-                String menuInfo = getMenuInfo(driver);
+                String[] menuInfo = getMenuInfo(driver);
 
                 // 메뉴가 있으면 저장
-                if (!menuInfo.equals("")) {
+                if (!menuInfo[0].equals("")) {
                     ArrayList<String> menuTemp = coffeeInfoms.get(key);
 
-                    menuTemp.add(0, address);
-                    menuTemp.add(1, menuInfo);
+                    // 주소 -> 좌표
+                    String[] coordinate = addressToCoordinate.addressToCoordinate(address);
+
+                    menuTemp.add(0, address); // 주소
+                    menuTemp.add(1, menuInfo[0]); // 메뉴 이름
+                    menuTemp.add(2, menuInfo[1]); // 메뉴 가격
+                    menuTemp.add(3, coordinate[0]); // 위도
+                    menuTemp.add(4, coordinate[1]); // 경도
+
+                    js.executeScript("window.scrollTo(0, 0)");
+                    WebElement profile = null;
+                    try {
+                        // 대표 사진
+                        profile = driver.findElement(By.cssSelector("div#ibu_1.K0PDV._div"));
+                    } catch (Exception exception) {
+                        // 대표 사진 위치에 동영상이 있다면 옆 사진
+                        profile = driver.findElement(By.cssSelector("div#ibu_2.K0PDV._div"));
+                    }
+                    String style = profile.getAttribute("style");
+                    String imageUrl = extractImageUrl(style);
+                    menuTemp.add(5, imageUrl); // 대표 사진
+
                     coffeeInfoms.put(key, menuTemp);
                 } else {
                     // 메뉴 없으면 해시맵에서 삭제
                     coffeeInfoms.remove(key);
                 }
-                System.out.println(coffeeInfoms);
 
                 driver.switchTo().parentFrame(); // 부모 프레임으로 이동
                 driver.switchTo().frame("searchIframe"); // 원래 iframe으로 이동
             }
 
-            // 다음 페이지로 못가면 break;
             if (nextButton.getAttribute("aria-disabled").equals("true")) {
+                // 다음 페이지로 못가면 break;
                 break;
             }
 
@@ -163,7 +192,7 @@ public class CrawlingCafe {
         }
     }
 
-    public static String getMenuInfo(WebDriver driver) {
+    public static String[] getMenuInfo(WebDriver driver) {
         try {
             // 더보기 클릭
             WebElement moreSee = driver.findElement(By.className("fvwqf"));
@@ -179,23 +208,36 @@ public class CrawlingCafe {
             // 변동 가격이랑 123~124 이런 가격도 나오도록
             List<WebElement> priceElements = driver.findElements(By.xpath("//div[@class='GXS1X']"));
 
-            StringBuilder menuInfoBuilder = new StringBuilder();
+            String[] menuInfo = {"", ""};
 
-            // 각 메뉴 요소에서 메뉴 이름과 가격을 가져와서 문자열로 만듦
+            // 각 메뉴 요소에서 메뉴 이름과 가격을 가져오기
             for (int i = 0; i < menuElements.size(); i++) {
                 String menuName = menuElements.get(i).getText().toLowerCase(); // 소문자로 변형 -> 비교 위해서
                 String price = priceElements.get(i).getText();
 
                 if (MENU_NAMES.contains(menuName)) {
                     // 메뉴 이름과 가격을 문자열로 추가
-                    menuInfoBuilder.append(menuName).append(": ").append(price).append("; ");
+                    menuInfo[0] = menuName;
+                    menuInfo[1] = price;
+                    break;
                 }
             }
             // 메뉴 정보 반환
-            return menuInfoBuilder.toString();
+            return menuInfo;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return "";
+            log.info(e.getMessage());
+            return new String[]{"", ""};
+        }
+    }
+
+    public static String extractImageUrl(String styleAttribute) {
+        Pattern pattern = Pattern.compile("url\\(\"(.*?)\"\\)");
+        Matcher matcher = pattern.matcher(styleAttribute);
+
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else {
+            return null;
         }
     }
 }
