@@ -66,8 +66,6 @@ public class AddressToCoordinate {
 
             for (int i = 0; i < arr.length(); i++) {
                 JSONObject temp = (JSONObject) arr.get(i);
-                //System.out.println("address : " + temp.get("roadAddress"));
-                //System.out.println("jibunAddress : " + temp.get("jibunAddress"));
                 result[0] = (String) temp.get("y"); // 위도
                 result[1] = (String) temp.get("x"); // 경도
             }
