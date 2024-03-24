@@ -27,10 +27,10 @@ public class UserService {
     }
 
     @Transactional
-    public User save(UserRequest userRequest) {
+    public void save(UserRequest userRequest) {
         CommonValidator.notNullOrThrow(userRequest, "사용자 등록 요청");
 
         User user = User.toUserEntity(userRequest);
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 }
