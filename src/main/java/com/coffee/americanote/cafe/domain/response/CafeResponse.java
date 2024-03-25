@@ -8,7 +8,7 @@ public record CafeResponse(
         String address,
         double latitude,
         double longitude,
-        String photo
+        String imageUrl
 ) {
     public CafeResponse(Cafe cafe) {
         this(
@@ -17,7 +17,7 @@ public record CafeResponse(
                 cafe.getAddress(),
                 cafe.getLatitude(),
                 cafe.getLongitude(),
-                cafe.getPhoto()
+                cafe.getImageUrl()
         );
     }
 }

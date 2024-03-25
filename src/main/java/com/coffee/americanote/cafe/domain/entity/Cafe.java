@@ -37,17 +37,17 @@ public class Cafe extends BaseEntity {
     @Column(nullable = false)
     private double longitude;
 
-    @Column(name = "cafe_photo")
-    private String photo;
+    @Column(name = "image_url") // 이름 link 어쩌구
+    private String imageUrl;
 
     public static Cafe toCafeEntity(String name, String address,
-                                    double latitude, double longitude, String photo) {
+                                    double latitude, double longitude, String imageUrl) {
         return Cafe.builder()
                 .name(name)
                 .address(address)
                 .latitude(latitude)
                 .longitude(longitude)
-                .photo(photo)
+                .imageUrl(imageUrl)
                 .build();
     }
 }
