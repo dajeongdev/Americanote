@@ -41,7 +41,7 @@ public class Cafe extends BaseEntity {
     @Column(nullable = false)
     private double longitude;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", length = 512)
     private String imageUrl;
 
     @OneToMany(mappedBy = "cafe")
