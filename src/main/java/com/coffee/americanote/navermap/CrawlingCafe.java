@@ -1,5 +1,7 @@
 package com.coffee.americanote.navermap;
 
+import com.coffee.americanote.cafe.domain.entity.Cafe;
+import com.coffee.americanote.cafe.repository.CafeRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,14 +18,16 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.stereotype.Service;
 
-@Service
 @Slf4j
+@Service
 public class CrawlingCafe {
 
     private final AddressToCoordinate addressToCoordinate;
+    private final CafeRepository cafeRepository;
 
-    public CrawlingCafe(AddressToCoordinate addressToCoordinate) {
+    public CrawlingCafe(AddressToCoordinate addressToCoordinate, CafeRepository cafeRepository) {
         this.addressToCoordinate = addressToCoordinate;
+        this.cafeRepository = cafeRepository;
     }
 
     private WebDriver driver;
@@ -32,8 +36,8 @@ public class CrawlingCafe {
     private static final String URL = "https://map.naver.com/v5/";
 
     private static final List<String> MENU_NAMES = List.of("아메리카노", "커피", "americano", "coffee");
-    // 매장 정보들을 저장할 해시맵
 
+    // 매장 정보들을 저장할 해시맵
     Map<String, ArrayList<String>> coffeeInfoms = new HashMap<>();
 
     public void process() throws InterruptedException {
@@ -147,16 +151,8 @@ public class CrawlingCafe {
 
                 // 메뉴가 있으면 저장
                 if (!menuInfo[0].equals("")) {
-                    ArrayList<String> menuTemp = coffeeInfoms.get(key);
-
                     // 주소 -> 좌표
                     String[] coordinate = addressToCoordinate.addressToCoordinate(address);
-
-                    menuTemp.add(0, address); // 주소
-                    menuTemp.add(1, menuInfo[0]); // 메뉴 이름
-                    menuTemp.add(2, menuInfo[1]); // 메뉴 가격
-                    menuTemp.add(3, coordinate[0]); // 위도
-                    menuTemp.add(4, coordinate[1]); // 경도
 
                     js.executeScript("window.scrollTo(0, 0)");
                     WebElement profile = null;
@@ -168,10 +164,14 @@ public class CrawlingCafe {
                         profile = driver.findElement(By.cssSelector("div#ibu_2.K0PDV._div"));
                     }
                     String style = profile.getAttribute("style");
-                    String imageUrl = extractImageUrl(style);
-                    menuTemp.add(5, imageUrl); // 대표 사진
+                    String imageUrl = extractImageUrl(style); // 대표 사진
 
-                    coffeeInfoms.put(key, menuTemp);
+                    // db에 저장
+                    Cafe cafeEntity = Cafe.toCafeEntity(key, address,
+                            Double.parseDouble(coordinate[0]), Double.parseDouble(coordinate[1]), imageUrl);
+                    cafeRepository.save(cafeEntity);
+
+                    coffeeInfoms.remove(key);
                 } else {
                     // 메뉴 없으면 해시맵에서 삭제
                     coffeeInfoms.remove(key);
