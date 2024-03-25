@@ -3,10 +3,17 @@ package com.coffee.americanote.cafe.service;
 import com.coffee.americanote.cafe.domain.entity.Cafe;
 import com.coffee.americanote.cafe.repository.CafeRepository;
 import com.coffee.americanote.cafe.service.AddressToCoordinate;
+import com.coffee.americanote.coffee.domain.entity.Coffee;
+import com.coffee.americanote.coffee.domain.entity.CoffeeFlavour;
+import com.coffee.americanote.coffee.repository.CoffeeFlavourRepository;
+import com.coffee.americanote.coffee.repository.CoffeeRepository;
+import com.coffee.americanote.global.Degree;
+import com.coffee.americanote.global.Flavour;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +34,8 @@ public class CrawlingCafe {
 
     private final AddressToCoordinate addressToCoordinate;
     private final CafeRepository cafeRepository;
+    private final CoffeeRepository coffeeRepository;
+    private final CoffeeFlavourRepository flavourRepository;
 
     private WebDriver driver;
     private static final String LOCATION = "연남동";
@@ -146,9 +155,11 @@ public class CrawlingCafe {
 
                 // 메뉴 정보 가져오기
                 String[] menuInfo = getMenuInfo(driver);
+                // 5000~6000 이런건 처리 불가
+                menuInfo[1] = menuInfo[1].replaceAll("[^0-9]", "");
 
-                // 메뉴가 있으면 저장
-                if (!menuInfo[0].equals("")) {
+                // 메뉴 가격이 있으면 저장
+                if (!menuInfo[1].equals("")) {
                     // 주소 -> 좌표
                     String[] coordinate = addressToCoordinate.addressToCoordinate(address);
 
@@ -164,10 +175,30 @@ public class CrawlingCafe {
                     String style = profile.getAttribute("style");
                     String imageUrl = extractImageUrl(style); // 대표 사진
 
-                    // db에 저장
-                    Cafe cafeEntity = Cafe.toCafeEntity(key, address,
-                            Double.parseDouble(coordinate[0]), Double.parseDouble(coordinate[1]), imageUrl);
-                    cafeRepository.save(cafeEntity);
+                    // db에 카페 정보 저장
+                    Cafe cafeEntity = Cafe.builder()
+                            .name(key)
+                            .address(address)
+                            .latitude(Double.parseDouble(coordinate[0]))
+                            .longitude(Double.parseDouble(coordinate[1]))
+                            .imageUrl(imageUrl).build();
+                    Cafe savedCafe = cafeRepository.save(cafeEntity);
+                    // db에 커피 정보 저장
+                    Coffee coffeeEntity = Coffee.builder()
+                            .cafe(savedCafe)
+                            .name(menuInfo[0])
+                            .intensity(getRandomDegree())
+                            .acidity(getRandomDegree())
+                            .price(Integer.parseInt(menuInfo[1])).build();
+                    Coffee savedCoffee = coffeeRepository.save(coffeeEntity);
+                    // db에 커피 향 정보 저장
+                    List<Flavour> randomFlavours = getRandomFlavours();
+                    for (Flavour randomFlavour : randomFlavours) {
+                        CoffeeFlavour flavourEntity = CoffeeFlavour.builder()
+                                .coffee(savedCoffee)
+                                .flavour(randomFlavour).build();
+                        flavourRepository.save(flavourEntity);
+                    }
 
                     coffeeInfoms.remove(key);
                 } else {
@@ -237,5 +268,28 @@ public class CrawlingCafe {
         } else {
             return null;
         }
+    }
+
+    public static Degree getRandomDegree() {
+        Degree[] degrees = Degree.values();
+        Random random = new Random();
+        int randomIndex = random.nextInt(degrees.length);
+        return degrees[randomIndex];
+    }
+
+    public static List<Flavour> getRandomFlavours() {
+        Random random = new Random();
+        List<Flavour> allFlavours = List.of(Flavour.values());
+        int chooseNum = random.nextInt(3) + 1;
+
+        List<Flavour> chooseFlavours = new ArrayList<>();
+        for (int i = 0; i < chooseNum; i++) {
+            Flavour randomFlavour;
+            do {
+                randomFlavour = allFlavours.get(random.nextInt(allFlavours.size()));
+            } while (chooseFlavours.contains(randomFlavour));
+            chooseFlavours.add(randomFlavour);
+        }
+        return chooseFlavours;
     }
 }
