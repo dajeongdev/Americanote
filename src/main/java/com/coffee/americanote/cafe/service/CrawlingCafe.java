@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -21,15 +22,11 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class CrawlingCafe {
 
     private final AddressToCoordinate addressToCoordinate;
     private final CafeRepository cafeRepository;
-
-    public CrawlingCafe(AddressToCoordinate addressToCoordinate, CafeRepository cafeRepository) {
-        this.addressToCoordinate = addressToCoordinate;
-        this.cafeRepository = cafeRepository;
-    }
 
     private WebDriver driver;
     private static final String LOCATION = "연남동";

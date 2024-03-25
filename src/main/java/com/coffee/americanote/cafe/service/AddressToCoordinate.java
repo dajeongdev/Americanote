@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @PropertySource("classpath:application-naver-token.yml")
 public class AddressToCoordinate {
@@ -70,7 +72,7 @@ public class AddressToCoordinate {
                 result[1] = (String) temp.get("x"); // 경도
             }
         } catch (Exception  e) {
-            System.out.println(e);
+            log.info(e.getMessage());
         }
         return result;
     }
