@@ -1,8 +1,6 @@
 package com.coffee.americanote.coffee.domain.entity;
 
-import com.coffee.americanote.cafe.domain.entity.Cafe;
-import com.coffee.americanote.common.entity.BaseEntity;
-import com.coffee.americanote.global.Degree;
+import com.coffee.americanote.global.Flavour;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -23,30 +21,20 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "coffee")
+@Table(name = "coffee_flavour")
 @Entity
-public class Coffee extends BaseEntity {
+public class CoffeeFlavour {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "coffee_id")
+    @Column(name = "coffee_flavour_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cafe_id")
-    private Cafe cafe;
-
-    @Column(name = "coffee_name", nullable = false)
-    private String name;
+    @JoinColumn(name = "coffee_id")
+    private Coffee coffee;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Degree intensity;
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Degree acidity;
-
-    @Column(nullable = false)
-    private int price;
+    private Flavour flavour;
 }
