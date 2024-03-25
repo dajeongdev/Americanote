@@ -1,7 +1,8 @@
-package com.coffee.americanote.navermap;
+package com.coffee.americanote.cafe.service;
 
 import com.coffee.americanote.cafe.domain.entity.Cafe;
 import com.coffee.americanote.cafe.repository.CafeRepository;
+import com.coffee.americanote.cafe.service.AddressToCoordinate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

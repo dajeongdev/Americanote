@@ -1,4 +1,4 @@
-package com.coffee.americanote.navermap;
+package com.coffee.americanote.cafe.service;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
