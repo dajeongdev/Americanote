@@ -165,8 +165,13 @@ public class CrawlingCafe {
                     String imageUrl = extractImageUrl(style); // 대표 사진
 
                     // db에 저장
-                    Cafe cafeEntity = Cafe.toCafeEntity(key, address,
-                            Double.parseDouble(coordinate[0]), Double.parseDouble(coordinate[1]), imageUrl);
+                    Cafe cafeEntity = Cafe.builder()
+                            .name(key)
+                            .address(address)
+                            .latitude(Double.parseDouble(coordinate[0]))
+                            .longitude(Double.parseDouble(coordinate[1]))
+                            .imageUrl(imageUrl)
+                            .build();
                     cafeRepository.save(cafeEntity);
 
                     coffeeInfoms.remove(key);

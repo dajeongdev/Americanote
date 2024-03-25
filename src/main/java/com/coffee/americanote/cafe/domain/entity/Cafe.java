@@ -39,15 +39,4 @@ public class Cafe extends BaseEntity {
 
     @Column(name = "image_url")
     private String imageUrl;
-
-    public static Cafe toCafeEntity(String name, String address,
-                                    double latitude, double longitude, String imageUrl) {
-        return Cafe.builder()
-                .name(name)
-                .address(address)
-                .latitude(latitude)
-                .longitude(longitude)
-                .imageUrl(imageUrl)
-                .build();
-    }
 }
