@@ -37,7 +37,7 @@ public class Cafe extends BaseEntity {
     @Column(nullable = false)
     private double longitude;
 
-    @Column(name = "image_url") // 이름 link 어쩌구
+    @Column(name = "image_url")
     private String imageUrl;
 
     public static Cafe toCafeEntity(String name, String address,
