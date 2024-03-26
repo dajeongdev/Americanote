@@ -1,4 +1,4 @@
-package com.coffee.americanote.user.oauth2;
+package com.coffee.americanote.user.service;
 
 import com.coffee.americanote.user.domain.request.KakaoLoginRequest;
 import com.google.gson.JsonElement;
@@ -16,7 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Component
-public class KakaoLoginUtil {
+public class KakaoLoginService {
 
     @Value("${oauth.kakao.client-id}")
     private String CLIENT_ID;
@@ -28,7 +28,7 @@ public class KakaoLoginUtil {
     private String CLIENT_SECRET;
 
     public KakaoLoginRequest kakaoOAuth(String code) {
-        // 토큰 받기 TODO 테스트 후 삭제
+        // 토큰 받기 TODO 배포 테스트 후 삭제
         ResponseEntity<String> kakaoToken = getKakaoToken(code);
 
         // 사용자 정보 조회
