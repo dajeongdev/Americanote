@@ -37,8 +37,10 @@ out/
 ### VS Code ###
 .vscode/
 
+### YML files ###
 # Database
 application-database.yml
-
 # Naver Token
 application-naver-token.yml
+# OAuth2 & JWT
+application-security.yml
