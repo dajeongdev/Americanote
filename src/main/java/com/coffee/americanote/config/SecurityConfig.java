@@ -1,6 +1,10 @@
 package com.coffee.americanote.config;
 
 
+import com.coffee.americanote.security.handler.CustomAccessDeniedHandler;
+import com.coffee.americanote.security.handler.CustomAuthenticationEntryPoint;
+import com.coffee.americanote.security.jwt.filter.JwtAuthenticationFilter;
+import com.coffee.americanote.security.jwt.filter.JwtFailureFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,12 +14,18 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtFailureFilter jwtFailureFilter;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -31,13 +41,20 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests((request) ->
                         request.requestMatchers(
-                                new AntPathRequestMatcher("/"),
-                                new AntPathRequestMatcher("/user/kakao"),
-                                new AntPathRequestMatcher("/error"),
-                                new AntPathRequestMatcher("/auth/success"),
-                                new AntPathRequestMatcher("/favicon.ico")
-                        ).permitAll()
-                );
+                                        new AntPathRequestMatcher("/**"),
+                                        new AntPathRequestMatcher("/user/kakao"),
+                                        new AntPathRequestMatcher("/error"),
+                                        new AntPathRequestMatcher("/auth/success"),
+                                        new AntPathRequestMatcher("/favicon.ico")
+                                ).permitAll()
+                                .anyRequest().authenticated())
+
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtFailureFilter, JwtAuthenticationFilter.class)
+
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler));
 
         return http.build();
     }
