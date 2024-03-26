@@ -52,7 +52,7 @@ public class KakaoLoginUtil {
         return new RestTemplate().exchange(
                 "https://kauth.kakao.com/oauth/token",
                 HttpMethod.POST,
-                new HttpEntity<>(headers),
+                new HttpEntity<>(map, headers),
                 String.class
         );
     }
