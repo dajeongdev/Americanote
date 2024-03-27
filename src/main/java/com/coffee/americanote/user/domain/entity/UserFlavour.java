@@ -1,6 +1,7 @@
 package com.coffee.americanote.user.domain.entity;
 
 import com.coffee.americanote.global.Flavour;
+import com.coffee.americanote.user.domain.request.KakaoLoginRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

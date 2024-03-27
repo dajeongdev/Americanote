@@ -16,6 +16,10 @@ import lombok.NoArgsConstructor;
 public class UserToken {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_token_id")
+    private Long id;
+
     @Column(name = "user_id")
     private Long userId;
 

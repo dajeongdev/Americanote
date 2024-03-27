@@ -7,10 +7,7 @@ import com.coffee.americanote.user.domain.request.KakaoLoginRequest;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Builder
@@ -22,6 +19,7 @@ public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
     @Column(name = "kakao_id")
@@ -55,5 +53,13 @@ public class User extends BaseEntity {
                 .profileImageUrl(request.profileImageUrl())
                 .role(request.role())
                 .build();
+    }
+
+    public static void updateIntensity(User user, Degree intensity) {
+        user.intensity = intensity;
+    }
+
+    public static void updateAcidity(User user, Degree acidity) {
+        user.acidity = acidity;
     }
 }
