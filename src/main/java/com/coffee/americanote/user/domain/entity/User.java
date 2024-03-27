@@ -4,10 +4,7 @@ import com.coffee.americanote.common.entity.BaseEntity;
 import com.coffee.americanote.common.entity.UserRole;
 import com.coffee.americanote.user.domain.request.KakaoLoginRequest;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Builder
@@ -19,6 +16,7 @@ public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
     @Column(name = "kakao_id")
