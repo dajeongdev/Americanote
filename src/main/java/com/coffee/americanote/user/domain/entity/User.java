@@ -4,6 +4,7 @@ import com.coffee.americanote.common.entity.BaseEntity;
 import com.coffee.americanote.common.entity.UserRole;
 import com.coffee.americanote.global.Degree;
 import com.coffee.americanote.user.domain.request.KakaoLoginRequest;
+import com.coffee.americanote.user.domain.request.UserPreferRequest;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
