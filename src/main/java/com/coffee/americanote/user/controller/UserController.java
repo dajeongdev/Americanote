@@ -1,5 +1,8 @@
 package com.coffee.americanote.user.controller;
 
+import com.coffee.americanote.common.response.CommonResponse;
+import com.coffee.americanote.user.domain.response.UserResponse;
+import com.coffee.americanote.user.service.MyPageService;
 import com.coffee.americanote.user.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final MyPageService myPageService;
 
     @GetMapping("/user/kakao")
     ResponseEntity<Void> login(@RequestParam("code") String code,
@@ -27,5 +31,11 @@ public class UserController {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + accessToken);
         return new ResponseEntity<>(null, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/user/data")
+    ResponseEntity<CommonResponse<UserResponse>> getMyData(
+            @RequestHeader(value = "Authorization") String accessToken) {
+        return new ResponseEntity<>(new CommonResponse<>("마이페이지", myPageService.getMyData(accessToken)), HttpStatus.OK);
     }
 }
