@@ -9,8 +9,6 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,7 +28,6 @@ import java.util.stream.Collectors;
 import static com.coffee.americanote.common.entity.ErrorCode.EXPIRED_TOKEN;
 
 @Slf4j
-@RequiredArgsConstructor
 @Component
 public class JwtTokenProvider {
 
@@ -40,11 +37,12 @@ public class JwtTokenProvider {
     private static final long REFRESH_TOKEN_EXPIRED_TIME = 1000L * 60 * 60 * 24 * 14; // 2주
     private static final String KEY_ROLE = "role";
 
-    private SecretKey secretKey;
+    private final SecretKey secretKey;
 
-    @PostConstruct
-    public void setSecretKey(@Value("${jwt.secret-key}") String key) {
-        secretKey = Keys.hmacShaKeyFor(key.getBytes());
+    public JwtTokenProvider(@Value("${jwt.secret-key}") String key,
+                            UserTokenService userTokenService) {
+        this.userTokenService = userTokenService;
+        this.secretKey = Keys.hmacShaKeyFor(key.getBytes());
     }
 
     public String createAccessToken(Authentication authentication) {

@@ -6,7 +6,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -16,7 +15,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
-@Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -27,8 +25,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/docs/**", // swagger
             "/v3/api-docs/**", // swagger
             "/user/kakao", // 카카오 로그인
-            "/"
-//            "/**",
     };
     private static final String HEADER_STRING = "Authorization";
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
