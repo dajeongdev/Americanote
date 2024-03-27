@@ -51,7 +51,7 @@ public class Coffee extends BaseEntity {
     private Degree acidity;
 
     @Column(nullable = false)
-    private int price;
+    private Integer price;
 
     @OneToMany(mappedBy = "coffee")
     private List<CoffeeFlavour> flavours = new ArrayList<>();
