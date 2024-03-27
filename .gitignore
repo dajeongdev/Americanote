@@ -37,6 +37,9 @@ out/
 ### VS Code ###
 .vscode/
 
+### querydsl Q files ###
+src/main/generated/
+
 ### YML files ###
 # Database
 application-database.yml

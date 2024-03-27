@@ -2,8 +2,12 @@ package com.coffee.americanote.user.domain.entity;
 
 import com.coffee.americanote.common.entity.BaseEntity;
 import com.coffee.americanote.common.entity.UserRole;
+import com.coffee.americanote.global.Degree;
 import com.coffee.americanote.user.domain.request.KakaoLoginRequest;
+import com.coffee.americanote.user.domain.request.UserPreferRequest;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.*;
 
 @Getter
@@ -32,6 +36,17 @@ public class User extends BaseEntity {
     @Column(name = "role", nullable = false)
     private UserRole role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "intensity")
+    private Degree intensity;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "acidity")
+    private Degree acidity;
+
+    @OneToMany(mappedBy = "user")
+    private List<UserFlavour> flavours = new ArrayList<>();
+
     public static User toUserEntity(KakaoLoginRequest request) {
         return User.builder()
                 .kakaoId(request.kakaoId())
@@ -39,5 +54,13 @@ public class User extends BaseEntity {
                 .profileImageUrl(request.profileImageUrl())
                 .role(request.role())
                 .build();
+    }
+
+    public static void updateIntensity(User user, Degree intensity) {
+        user.intensity = intensity;
+    }
+
+    public static void updateAcidity(User user, Degree acidity) {
+        user.acidity = acidity;
     }
 }

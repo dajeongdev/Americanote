@@ -1,5 +1,8 @@
 package com.coffee.americanote.user.controller;
 
+import com.coffee.americanote.common.response.CommonResponse;
+import com.coffee.americanote.user.domain.response.UserResponse;
+import com.coffee.americanote.user.service.MyPageService;
 import com.coffee.americanote.common.response.BasicApiSwaggerResponse;
 import com.coffee.americanote.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final MyPageService myPageService;
 
     @Operation(summary = "summary : 카카오 로그인", description = "description : return header(accessToken)")
     @BasicApiSwaggerResponse
@@ -32,5 +36,14 @@ public class UserController {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", "Bearer " + accessToken);
         return new ResponseEntity<>(null, headers, HttpStatus.OK);
+    }
+
+    @Operation(summary = "summary: 마이페이지 조회", description = "description : return user data")
+    @BasicApiSwaggerResponse
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
+    @GetMapping("/mypage")
+    ResponseEntity<CommonResponse<UserResponse>> getMyData(
+            @RequestHeader(value = "Authorization") String accessToken) {
+        return new ResponseEntity<>(new CommonResponse<>("마이페이지", myPageService.getMyData(accessToken)), HttpStatus.OK);
     }
 }
