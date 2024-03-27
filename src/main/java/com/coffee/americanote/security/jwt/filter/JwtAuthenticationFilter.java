@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -15,16 +16,19 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String[] WHITELIST = {
+            "/swagger-ui.html", // swagger
+            "/swagger-ui/**", // swagger
+            "/v3/api-docs/**", // swagger
+            "/docs/**", // swagger
             "/error",
             "/favicon.ico",
-            "/docs/**", // swagger
-            "/v3/api-docs/**", // swagger
-            "/user/kakao", // 카카오 로그인
+            "/api/**",
     };
     private static final String HEADER_STRING = "Authorization";
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
@@ -34,6 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
+        log.info("path = {}", path);
         if (Arrays.stream(WHITELIST).anyMatch(pattern -> antPathMatcher.match(pattern, path))) {
             filterChain.doFilter(request, response);
             return;
