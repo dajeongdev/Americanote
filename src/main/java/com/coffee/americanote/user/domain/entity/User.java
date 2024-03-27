@@ -2,6 +2,7 @@ package com.coffee.americanote.user.domain.entity;
 
 import com.coffee.americanote.common.entity.BaseEntity;
 import com.coffee.americanote.common.entity.UserRole;
+import com.coffee.americanote.global.Degree;
 import com.coffee.americanote.user.domain.request.KakaoLoginRequest;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -33,6 +34,14 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private UserRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "intensity")
+    private Degree intensity;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "acidity")
+    private Degree acidity;
 
     public static User toUserEntity(KakaoLoginRequest request) {
         return User.builder()
