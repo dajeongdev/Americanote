@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -33,9 +34,11 @@ public class JwtTokenProvider {
 
     private final UserTokenService userTokenService;
 
-    private static final long ACCESS_TOKEN_EXPIRED_TIME = 1000L * 60 * 60; // 60분
-    private static final long REFRESH_TOKEN_EXPIRED_TIME = 1000L * 60 * 60 * 24 * 14; // 2주
+    private static final long ACCESS_TOKEN_EXPIRED_TIME = Duration.ofHours(1).toMillis(); // 60분
+    private static final long REFRESH_TOKEN_EXPIRED_TIME = Duration.ofDays(14).toDays(); // 2주
     private static final String KEY_ROLE = "role";
+
+    private static final String TOKEN_PREFIX = "Bearer ";
 
     private final SecretKey secretKey;
 
@@ -46,11 +49,11 @@ public class JwtTokenProvider {
     }
 
     public String createAccessToken(Authentication authentication) {
-        return createToken(authentication, ACCESS_TOKEN_EXPIRED_TIME);
+        return TOKEN_PREFIX + createToken(authentication, ACCESS_TOKEN_EXPIRED_TIME);
     }
 
     public String createRefreshToken(Authentication authentication) {
-        return createToken(authentication, REFRESH_TOKEN_EXPIRED_TIME);
+        return TOKEN_PREFIX + createToken(authentication, REFRESH_TOKEN_EXPIRED_TIME);
     }
 
     private String createToken(Authentication authentication, long expiredTime) {
@@ -88,7 +91,7 @@ public class JwtTokenProvider {
             throw new TokenException(EXPIRED_TOKEN);
         }
 
-        String reissuedAccessToken = createAccessToken(getAuthentication(refreshToken));
+        String reissuedAccessToken = TOKEN_PREFIX + createAccessToken(getAuthentication(refreshToken));
         userTokenService.updateToken(token, reissuedAccessToken);
         return reissuedAccessToken;
     }
