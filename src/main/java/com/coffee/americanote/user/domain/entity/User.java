@@ -5,6 +5,8 @@ import com.coffee.americanote.common.entity.UserRole;
 import com.coffee.americanote.global.Degree;
 import com.coffee.americanote.user.domain.request.KakaoLoginRequest;
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,6 +44,9 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "acidity")
     private Degree acidity;
+
+    @OneToMany(mappedBy = "user")
+    private List<UserFlavour> flavours = new ArrayList<>();
 
     public static User toUserEntity(KakaoLoginRequest request) {
         return User.builder()
