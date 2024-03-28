@@ -57,7 +57,7 @@ public class CafeController {
         return new ResponseEntity<>(new CommonResponse<>("카페 필터링 검색", cafeService.searchCafe(request)), HttpStatus.OK);
     }
 
-    @Operation(summary = "summary : 카페 바텀시트", description = "description : return cafe detail info")
+    @Operation(summary = "summary : 카페 바텀시트", description = "description : return cafe detail info / token required!")
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/info")
