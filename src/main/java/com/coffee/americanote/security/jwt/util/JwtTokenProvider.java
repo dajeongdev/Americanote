@@ -101,7 +101,7 @@ public class JwtTokenProvider {
             return Jwts.parserBuilder()
                     .setSigningKey(secretKey)
                     .build()
-                    .parseClaimsJws(accessToken)
+                    .parseClaimsJws(accessToken.replace(TOKEN_PREFIX, ""))
                     .getBody();
         } catch (ExpiredJwtException e) {
             return e.getClaims();
@@ -122,5 +122,10 @@ public class JwtTokenProvider {
     private List<SimpleGrantedAuthority> getAuthorities(Claims claims) {
         return Collections.singletonList(
                 new SimpleGrantedAuthority(claims.get(KEY_ROLE).toString()));
+    }
+
+    public Long getUserId(String accessToken) {
+         User user = (User) getAuthentication(accessToken).getPrincipal();
+         return Long.parseLong(user.getUsername());
     }
 }
