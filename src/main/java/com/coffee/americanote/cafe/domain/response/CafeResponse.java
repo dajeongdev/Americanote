@@ -4,20 +4,14 @@ import com.coffee.americanote.cafe.domain.entity.Cafe;
 
 public record CafeResponse(
         Long id,
-        String name,
-        String address,
         Double latitude,
-        Double longitude,
-        String imageUrl
+        Double longitude
 ) {
     public CafeResponse(Cafe cafe) {
         this(
                 cafe.getId(),
-                cafe.getName(),
-                cafe.getAddress(),
                 cafe.getLatitude(),
-                cafe.getLongitude(),
-                cafe.getImageUrl()
+                cafe.getLongitude()
         );
     }
 }

@@ -1,5 +1,6 @@
 package com.coffee.americanote.cafe.controller;
 
+import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
 import com.coffee.americanote.cafe.domain.response.CafeResponse;
 import com.coffee.americanote.cafe.service.CafeService;
 import com.coffee.americanote.common.response.BasicApiSwaggerResponse;
@@ -8,11 +9,15 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -31,5 +36,21 @@ public class CafeController {
     @GetMapping("/all")
     ResponseEntity<CommonResponse<List<CafeResponse>>> getAllCafe() {
         return new ResponseEntity<>(new CommonResponse<>("모든 카페 조회", cafeService.getAllCafe()), HttpStatus.OK);
+    }
+
+    @Operation(summary = "summary: 지도로 이동하기", description = "description: return coordinate")
+    @BasicApiSwaggerResponse
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
+    @GetMapping("/location")
+    ResponseEntity<CommonResponse<CafeResponse>> getCoordinate(@RequestParam("id") Long id) {
+        return new ResponseEntity<>(new CommonResponse<>("카페 좌표 조회", cafeService.getCoordinate(id)), HttpStatus.OK);
+    }
+
+    @Operation(summary = "summary: 필터링 검색", description = "description: return cafes coordinate")
+    @BasicApiSwaggerResponse
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
+    @PostMapping("/search")
+    ResponseEntity<CommonResponse<Set<CafeResponse>>> searchCafes(@RequestBody SearchCafeRequest request) {
+        return new ResponseEntity<>(new CommonResponse<>("카페 필터링 검색", cafeService.searchCafe(request)), HttpStatus.OK);
     }
 }

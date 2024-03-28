@@ -2,7 +2,7 @@ package com.coffee.americanote.coffee.domain.entity;
 
 import com.coffee.americanote.cafe.domain.entity.Cafe;
 import com.coffee.americanote.common.entity.BaseEntity;
-import com.coffee.americanote.global.Degree;
+import com.coffee.americanote.common.entity.Degree;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
