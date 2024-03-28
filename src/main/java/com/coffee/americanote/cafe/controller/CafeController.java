@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -31,5 +32,13 @@ public class CafeController {
     @GetMapping("/all")
     ResponseEntity<CommonResponse<List<CafeResponse>>> getAllCafe() {
         return new ResponseEntity<>(new CommonResponse<>("모든 카페 조회", cafeService.getAllCafe()), HttpStatus.OK);
+    }
+
+    @Operation(summary = "summary: 지도로 이동하기", description = "description: return coordinate")
+    @BasicApiSwaggerResponse
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
+    @GetMapping("/location")
+    ResponseEntity<CommonResponse<CafeResponse>> getCoordinate(@RequestParam("id") Long id) {
+        return new ResponseEntity<>(new CommonResponse<>("카페 좌표 조회", cafeService.getCoordinate(id)), HttpStatus.OK);
     }
 }
