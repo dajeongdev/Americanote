@@ -55,10 +55,14 @@ public class KakaoLoginService {
         JsonElement element = parser.parse(profile.getBody());
         JsonElement properties = element.getAsJsonObject().get("properties");
 
+        Long kakaoId = element.getAsJsonObject().get("id").getAsLong();
+        String nickname = properties.getAsJsonObject().get("nickname").getAsString();
+        String profileImage = properties.getAsJsonObject().get("profile_image").getAsString();
+
         return KakaoLoginRequest.builder()
-                .kakaoId(element.getAsJsonObject().get("id").getAsLong())
-                .nickname(properties.getAsJsonObject().get("nickname").getAsString())
-                .profileImageUrl(properties.getAsJsonObject().get("profile_image").getAsString())
+                .kakaoId(kakaoId)
+                .nickname(nickname)
+                .profileImageUrl(profileImage.contains("default_profile") ? null : profileImage)
                 .build();
     }
 }
