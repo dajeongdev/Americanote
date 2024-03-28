@@ -4,7 +4,7 @@ import static com.coffee.americanote.coffee.domain.entity.QCoffeeFlavour.*;
 
 import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
 import com.coffee.americanote.coffee.domain.entity.CoffeeFlavour;
-import com.coffee.americanote.global.Flavour;
+import com.coffee.americanote.common.entity.Flavour;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;

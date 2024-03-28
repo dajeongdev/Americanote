@@ -1,4 +1,4 @@
-package com.coffee.americanote.global;
+package com.coffee.americanote.common.entity;
 
 import java.util.Map;
 import java.util.stream.Collectors;

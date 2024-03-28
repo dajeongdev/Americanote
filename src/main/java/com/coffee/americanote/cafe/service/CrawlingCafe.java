@@ -2,13 +2,12 @@ package com.coffee.americanote.cafe.service;
 
 import com.coffee.americanote.cafe.domain.entity.Cafe;
 import com.coffee.americanote.cafe.repository.CafeRepository;
-import com.coffee.americanote.cafe.service.AddressToCoordinate;
 import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.domain.entity.CoffeeFlavour;
 import com.coffee.americanote.coffee.repository.CoffeeFlavourRepository;
 import com.coffee.americanote.coffee.repository.CoffeeRepository;
-import com.coffee.americanote.global.Degree;
-import com.coffee.americanote.global.Flavour;
+import com.coffee.americanote.common.entity.Degree;
+import com.coffee.americanote.common.entity.Flavour;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

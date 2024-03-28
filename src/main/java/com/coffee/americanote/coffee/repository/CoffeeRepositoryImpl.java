@@ -4,12 +4,11 @@ import static com.coffee.americanote.coffee.domain.entity.QCoffee.*;
 
 import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
 import com.coffee.americanote.coffee.domain.entity.Coffee;
-import com.coffee.americanote.global.Degree;
+import com.coffee.americanote.common.entity.Degree;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import java.util.List;
 
 public class CoffeeRepositoryImpl implements CoffeeRepositoryCustom{
