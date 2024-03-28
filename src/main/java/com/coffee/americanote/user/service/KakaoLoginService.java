@@ -10,8 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 @Slf4j
@@ -27,34 +25,12 @@ public class KakaoLoginService {
     @Value("${oauth.kakao.client-secret}")
     private String CLIENT_SECRET;
 
-    public KakaoLoginRequest kakaoOAuth(String code) {
-        // 토큰 받기 TODO 배포 테스트 후 삭제
-        ResponseEntity<String> kakaoToken = getKakaoToken(code);
-
+    public KakaoLoginRequest kakaoOAuth(String accessToken) {
         // 사용자 정보 조회
-        ResponseEntity<String> kakaoProfile = getKakaoProfile(kakaoToken.getBody());
+        ResponseEntity<String> kakaoProfile = getKakaoProfile(accessToken);
 
         // 사용자 객체 생성
         return getKakaoUserInfo(kakaoProfile);
-    }
-
-    private ResponseEntity<String> getKakaoToken(String code) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
-
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("grant_type", "authorization_code");
-        map.add("client_id", CLIENT_ID);
-        map.add("redirect_uri", REDIRECT_URI);
-        map.add("code", code);
-        map.add("client_secret", CLIENT_SECRET);
-
-        return new RestTemplate().exchange(
-                "https://kauth.kakao.com/oauth/token",
-                HttpMethod.POST,
-                new HttpEntity<>(map, headers),
-                String.class
-        );
     }
 
     private ResponseEntity<String> getKakaoProfile(String token) {
