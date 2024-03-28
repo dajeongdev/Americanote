@@ -28,7 +28,7 @@ public class UserService {
 
     @Transactional
     public String getJwtToken(String code) {
-        // 인가 코드 받아서 토큰 조회 후 사용자 정보 조회 (임시)
+        // 토큰 조회 후 사용자 정보 조회
         KakaoLoginRequest kakaoLoginRequest = kakaoLoginService.kakaoOAuth(code);
 
         // 조회해 온 정보로 회원 조회 및 가입
