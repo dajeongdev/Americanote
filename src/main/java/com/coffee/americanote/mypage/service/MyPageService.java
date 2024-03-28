@@ -1,4 +1,4 @@
-package com.coffee.americanote.user.service;
+package com.coffee.americanote.mypage.service;
 
 import com.coffee.americanote.common.entity.ErrorCode;
 import com.coffee.americanote.common.exception.TokenException;
