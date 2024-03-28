@@ -4,7 +4,6 @@ import com.coffee.americanote.common.entity.BaseEntity;
 import com.coffee.americanote.common.entity.UserRole;
 import com.coffee.americanote.global.Degree;
 import com.coffee.americanote.user.domain.request.KakaoLoginRequest;
-import com.coffee.americanote.user.domain.request.UserPreferRequest;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,11 +55,11 @@ public class User extends BaseEntity {
                 .build();
     }
 
-    public static void updateIntensity(User user, Degree intensity) {
-        user.intensity = intensity;
+    public void updateIntensity(Degree intensity) {
+        this.intensity = intensity;
     }
 
-    public static void updateAcidity(User user, Degree acidity) {
-        user.acidity = acidity;
+    public void updateAcidity(Degree acidity) {
+        this.acidity = acidity;
     }
 }
