@@ -31,7 +31,7 @@ public class UserController {
 
     @Operation(summary = "summary : 카카오 로그인", description = "description : return header(accessToken)")
     @BasicApiSwaggerResponse
-    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "200")
     @GetMapping("/kakao")
     ResponseEntity<Void> login(@RequestParam("code") String code, HttpServletRequest request) {
         String accessToken = request.getHeader(HEADER_STRING);
@@ -43,6 +43,9 @@ public class UserController {
         return new ResponseEntity<>(null, headers, HttpStatus.OK);
     }
 
+    @Operation(summary = "summary : 로그아웃", description = "description : return ok")
+    @BasicApiSwaggerResponse
+    @ApiResponse(responseCode = "200")
     @PostMapping("/logout")
     ResponseEntity<Void> logout(HttpServletRequest request) {
         userService.logout(request.getHeader(HEADER_STRING));
@@ -60,7 +63,7 @@ public class UserController {
 
     @Operation(summary = "summary: 내 취향 커피 고르기", description = "description : return ok")
     @BasicApiSwaggerResponse
-    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "200")
     @PutMapping("/choose/prefer")
     ResponseEntity<Void> updatePrefer(@RequestBody UserPreferRequest userPreferRequest, HttpServletRequest request){
         myPageService.updatePrefer(request.getHeader(HEADER_STRING), userPreferRequest);
