@@ -68,4 +68,10 @@ public class UserService {
                 userDetails.getAuthorities()
         );
     }
+
+    @Transactional
+    public void logout(String accessToken) {
+        Long userId = jwtTokenProvider.getUserId(accessToken);
+        userTokenRepository.deleteByUserId(userId);
+    }
 }

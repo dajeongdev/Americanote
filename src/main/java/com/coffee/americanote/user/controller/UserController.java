@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class UserController {
 
+    public static final String HEADER_STRING = "Authorization";
     private final UserService userService;
     private final MyPageService myPageService;
 
@@ -33,14 +34,19 @@ public class UserController {
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/kakao")
     ResponseEntity<Void> login(@RequestParam("code") String code, HttpServletRequest request) {
-        String accessToken = request.getHeader("Authorization");
+        String accessToken = request.getHeader(HEADER_STRING);
         if (accessToken == null) {
             accessToken = userService.getJwtToken(code);
         }
-        log.info("accessToken = {}", accessToken);
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + accessToken);
+        headers.add("Authorization", accessToken);
         return new ResponseEntity<>(null, headers, HttpStatus.OK);
+    }
+
+    @PostMapping("/logout")
+    ResponseEntity<Void> logout(HttpServletRequest request) {
+        userService.logout(request.getHeader(HEADER_STRING));
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
     @Operation(summary = "summary: 마이페이지 조회", description = "description : return user data")
@@ -48,7 +54,8 @@ public class UserController {
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/mypage")
     ResponseEntity<CommonResponse<UserResponse>> getMyData(HttpServletRequest request) {
-        return new ResponseEntity<>(new CommonResponse<>("마이페이지", myPageService.getMyData(request.getHeader("Authorization"))), HttpStatus.OK);
+        return new ResponseEntity<>(new CommonResponse<>(
+                "마이페이지", myPageService.getMyData(request.getHeader(HEADER_STRING))), HttpStatus.OK);
     }
 
     @Operation(summary = "summary: 내 취향 커피 고르기", description = "description : return ok")
@@ -56,7 +63,7 @@ public class UserController {
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @PutMapping("/choose/prefer")
     ResponseEntity<Void> updatePrefer(@RequestBody UserPreferRequest userPreferRequest, HttpServletRequest request){
-        myPageService.updatePrefer(request.getHeader("Authorization"), userPreferRequest);
+        myPageService.updatePrefer(request.getHeader(HEADER_STRING), userPreferRequest);
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 }
