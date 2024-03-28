@@ -29,7 +29,7 @@ public class UserController {
     private final UserService userService;
     private final MyPageService myPageService;
 
-    @Operation(summary = "summary : 카카오 로그인", description = "description : return header(accessToken)")
+    @Operation(summary = "summary : 카카오 로그인", description = "description : return header(accessToken) / token required!")
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
     @GetMapping("/kakao")
@@ -43,7 +43,7 @@ public class UserController {
         return new ResponseEntity<>(null, headers, HttpStatus.OK);
     }
 
-    @Operation(summary = "summary : 로그아웃", description = "description : return ok")
+    @Operation(summary = "summary : 로그아웃", description = "description : return ok / token required!")
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
     @PostMapping("/logout")
@@ -52,7 +52,7 @@ public class UserController {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    @Operation(summary = "summary: 마이페이지 조회", description = "description : return user data")
+    @Operation(summary = "summary: 마이페이지 조회", description = "description : return user data / token required!")
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/mypage")
@@ -61,7 +61,7 @@ public class UserController {
                 "마이페이지", myPageService.getMyData(request.getHeader(HEADER_STRING))), HttpStatus.OK);
     }
 
-    @Operation(summary = "summary: 내 취향 커피 고르기", description = "description : return ok")
+    @Operation(summary = "summary: 내 취향 커피 고르기", description = "description : return ok / token required!")
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
     @PutMapping("/choose/prefer")

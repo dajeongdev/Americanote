@@ -29,17 +29,18 @@ public class CoffeeRepositoryImpl implements CoffeeRepositoryCustom{
     }
 
     private BooleanExpression priceRange(String range) {
+        if (range == null) return coffee.price.isNotNull();
         return switch (range) {
             case "<" -> coffee.price.lt(5000);
             case "=" -> coffee.price.eq(5000);
             case ">" -> coffee.price.gt(5000);
-            default -> null;
+            default -> coffee.price.isNotNull();
         };
     }
 
     private BooleanExpression inIntensity(List<String> intensities) {
         if (intensities == null || intensities.isEmpty()) {
-            return null;
+            return coffee.intensity.isNotNull();
         }
         List<Degree> intensityEnums = intensities.stream()
                 .map(Degree::valueOfLabel).toList();
@@ -48,7 +49,7 @@ public class CoffeeRepositoryImpl implements CoffeeRepositoryCustom{
 
     private BooleanExpression inAcidity(List<String> acidities) {
         if (acidities == null || acidities.isEmpty()) {
-            return null;
+            return coffee.acidity.isNotNull();
         }
         List<Degree> acidityEnums = acidities.stream()
                 .map(Degree::valueOfLabel).toList();
