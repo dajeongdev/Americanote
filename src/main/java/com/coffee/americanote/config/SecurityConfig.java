@@ -45,8 +45,7 @@ public class SecurityConfig {
                                         new AntPathRequestMatcher("/api/**"),
                                         new AntPathRequestMatcher("/swagger-ui.html"),
                                         new AntPathRequestMatcher("/swagger-ui/**"),
-                                        new AntPathRequestMatcher("/v3/api-docs/**"),
-                                        new AntPathRequestMatcher("/docs/**"),
+                                        new AntPathRequestMatcher("/api-docs/**"),
                                         new AntPathRequestMatcher("/error"),
                                         new AntPathRequestMatcher("/favicon.ico")
                                 ).permitAll()
