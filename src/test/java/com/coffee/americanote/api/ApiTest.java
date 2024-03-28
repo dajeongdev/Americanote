@@ -1,10 +1,11 @@
 package com.coffee.americanote.api;
 
-import com.coffee.americanote.navermap.AddressToCoordinate;
-import com.coffee.americanote.navermap.CrawlingCafe;
+import com.coffee.americanote.cafe.service.AddressToCoordinate;
+import com.coffee.americanote.cafe.service.CrawlingCafe;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 public class ApiTest {

@@ -1,15 +1,34 @@
 package com.coffee.americanote.user.domain.response;
 
 import com.coffee.americanote.user.domain.entity.User;
+import com.coffee.americanote.user.domain.entity.UserFlavour;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public record UserResponse(
-        Long id,
-        String name
+        String nickname,
+        String profileImageUrl,
+        List<UserFlavourResponse> flavours,
+        String intensity,
+        String acidity
+
 ) {
-    public UserResponse(User user) {
+    public UserResponse(User user, List<UserFlavour> flavours) {
         this(
-          user.getId(),
-          user.getName()
+                user.getNickname(),
+                user.getProfileImageUrl(),
+                flavours.stream().map(UserFlavourResponse::new)
+                        .collect(Collectors.toList()),
+                user.getIntensity().getLabel(),
+                user.getAcidity().getLabel()
         );
+    }
+
+    public record UserFlavourResponse(
+            String flavour
+    ){
+        public UserFlavourResponse(UserFlavour userFlavour) {
+            this(userFlavour.getFlavour().getLabel());
+        }
     }
 }

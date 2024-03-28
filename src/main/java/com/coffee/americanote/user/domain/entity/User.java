@@ -1,12 +1,14 @@
 package com.coffee.americanote.user.domain.entity;
 
 import com.coffee.americanote.common.entity.BaseEntity;
-import com.coffee.americanote.user.domain.request.UserRequest;
+import com.coffee.americanote.common.entity.UserRole;
+import com.coffee.americanote.global.Degree;
+import com.coffee.americanote.user.domain.request.KakaoLoginRequest;
+import com.coffee.americanote.user.domain.request.UserPreferRequest;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.*;
 
 @Getter
 @Builder
@@ -18,14 +20,47 @@ public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
 
-    @Column
-    private String name;
+    @Column(name = "kakao_id")
+    private Long kakaoId;
 
-    public static User toUserEntity(UserRequest userRequest) {
+    @Column(name = "nickname")
+    private String nickname;
+
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private UserRole role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "intensity")
+    private Degree intensity;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "acidity")
+    private Degree acidity;
+
+    @OneToMany(mappedBy = "user")
+    private List<UserFlavour> flavours = new ArrayList<>();
+
+    public static User toUserEntity(KakaoLoginRequest request) {
         return User.builder()
-                .name(userRequest.name())
+                .kakaoId(request.kakaoId())
+                .nickname(request.nickname())
+                .profileImageUrl(request.profileImageUrl())
+                .role(request.role())
                 .build();
+    }
+
+    public static void updateIntensity(User user, Degree intensity) {
+        user.intensity = intensity;
+    }
+
+    public static void updateAcidity(User user, Degree acidity) {
+        user.acidity = acidity;
     }
 }

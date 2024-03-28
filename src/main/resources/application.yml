@@ -10,3 +10,4 @@ spring:
   profiles:
     include:
       - database
+      - security

@@ -4,8 +4,8 @@ import com.coffee.americanote.cafe.domain.entity.Cafe;
 
 public record CafeResponse(
         Long id,
-        double latitude,
-        double longitude
+        Double latitude,
+        Double longitude
 ) {
     public CafeResponse(Cafe cafe) {
         this(

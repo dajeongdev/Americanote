@@ -36,10 +36,10 @@ public class Cafe extends BaseEntity {
     private String address;
 
     @Column(nullable = false)
-    private double latitude;
+    private Double latitude;
 
     @Column(nullable = false)
-    private double longitude;
+    private Double longitude;
 
     @Column(name = "image_url", length = 512)
     private String imageUrl;
