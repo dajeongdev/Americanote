@@ -44,7 +44,7 @@ public class UserController {
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/mypage")
     ResponseEntity<CommonResponse<UserResponse>> getMyData(
-            @RequestHeader(value = "Authorization", required = false) String accessToken) {
+            @RequestHeader(value = "Authorization") String accessToken) {
         return new ResponseEntity<>(new CommonResponse<>("마이페이지", myPageService.getMyData(accessToken)), HttpStatus.OK);
     }
 
@@ -52,7 +52,7 @@ public class UserController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @PutMapping("/choose/prefer")
-    ResponseEntity<Void> updatePrefer(@RequestHeader(value = "Authorization", required = false) String accessToken,
+    ResponseEntity<Void> updatePrefer(@RequestHeader(value = "Authorization") String accessToken,
                                       @RequestBody UserPreferRequest userPreferRequest){
         myPageService.updatePrefer(accessToken, userPreferRequest);
         return new ResponseEntity<>(null, HttpStatus.OK);
