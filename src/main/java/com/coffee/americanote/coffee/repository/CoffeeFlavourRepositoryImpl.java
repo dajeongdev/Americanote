@@ -29,7 +29,7 @@ public class CoffeeFlavourRepositoryImpl implements CoffeeFlavourRepositoryCusto
 
     private BooleanExpression inFlavour(List<String> flavours) {
         if (flavours == null || flavours.isEmpty()) {
-            return null;
+            return coffeeFlavour.flavour.isNotNull();
         }
         List<Flavour> flavourEnums = flavours.stream()
                 .map(Flavour::valueOfLabel).toList();
