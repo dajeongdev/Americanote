@@ -24,11 +24,13 @@ public class UserController {
     public static final String HEADER_STRING = "Authorization";
     private final UserService userService;
 
-    @Operation(summary = "summary : 카카오 로그인", description = "description : return header(accessToken) / token required!")
+    @Operation(summary = "summary : 카카오 로그인",
+            description = "description : return header(accessToken), 취향 여부  / token required(optional)!")
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
     @GetMapping("/kakao")
-    ResponseEntity<CommonResponse<Boolean>> login(@RequestParam(value = "code", required = false) String code, HttpServletRequest request) {
+    ResponseEntity<CommonResponse<Boolean>> login(
+            @RequestParam(value = "code", required = false) String code, HttpServletRequest request) {
         String accessToken = request.getHeader(HEADER_STRING);
         boolean hasPreference = false;
         if (accessToken == null) {
