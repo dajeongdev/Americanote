@@ -4,7 +4,6 @@ import com.coffee.americanote.user.domain.request.KakaoLoginRequest;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -15,15 +14,6 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 @Component
 public class KakaoLoginService {
-
-    @Value("${oauth.kakao.client-id}")
-    private String CLIENT_ID;
-
-    @Value("${oauth.kakao.redirect-uri}")
-    private String REDIRECT_URI;
-
-    @Value("${oauth.kakao.client-secret}")
-    private String CLIENT_SECRET;
 
     public KakaoLoginRequest kakaoOAuth(String accessToken) {
         // 사용자 정보 조회
