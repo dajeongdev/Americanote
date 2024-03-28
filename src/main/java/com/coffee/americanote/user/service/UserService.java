@@ -74,4 +74,9 @@ public class UserService {
         Long userId = jwtTokenProvider.getUserId(accessToken);
         userTokenRepository.deleteByUserId(userId);
     }
+
+    public boolean existsPreference(String accessToken) {
+        Long userId = jwtTokenProvider.getUserId(accessToken);
+        return userRepository.findById(userId).map(User::getIntensity).isPresent();
+    }
 }

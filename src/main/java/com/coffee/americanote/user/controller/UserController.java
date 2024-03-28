@@ -1,6 +1,7 @@
 package com.coffee.americanote.user.controller;
 
 import com.coffee.americanote.common.response.BasicApiSwaggerResponse;
+import com.coffee.americanote.common.response.CommonResponse;
 import com.coffee.americanote.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,14 +28,18 @@ public class UserController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
     @GetMapping("/kakao")
-    ResponseEntity<Void> login(@RequestParam("code") String code, HttpServletRequest request) {
+    ResponseEntity<CommonResponse<Boolean>> login(@RequestParam(value = "code", required = false) String code, HttpServletRequest request) {
         String accessToken = request.getHeader(HEADER_STRING);
+        boolean hasPreference = false;
         if (accessToken == null) {
             accessToken = userService.getJwtToken(code);
+        }  else {
+            hasPreference = userService.existsPreference(accessToken);
         }
+
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", accessToken);
-        return new ResponseEntity<>(null, headers, HttpStatus.OK);
+        return new ResponseEntity<>(new CommonResponse<>("취향 선택 여부", hasPreference), headers, HttpStatus.OK);
     }
 
     @Operation(summary = "summary : 로그아웃", description = "description : return ok / token required!")
