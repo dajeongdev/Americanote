@@ -24,12 +24,8 @@ public class KakaoLoginService {
     }
 
     private ResponseEntity<String> getKakaoProfile(String token) {
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(token);
-        String accessToken = element.getAsJsonObject().get("access_token").getAsString();
-
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + accessToken);
+        headers.add("Authorization", "Bearer " + token);
         headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
 
         return new RestTemplate().exchange(
