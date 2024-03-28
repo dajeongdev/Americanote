@@ -19,8 +19,8 @@ public record UserResponse(
                 user.getProfileImageUrl(),
                 flavours.stream().map(UserFlavourResponse::new)
                         .collect(Collectors.toList()),
-                user.getIntensity().getLabel(),
-                user.getAcidity().getLabel()
+                user.getIntensity() != null ? user.getIntensity().getLabel() : null,
+                user.getAcidity() != null ? user.getAcidity().getLabel() : null
         );
     }
 

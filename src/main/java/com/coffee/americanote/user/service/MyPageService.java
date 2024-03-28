@@ -14,8 +14,10 @@ import com.coffee.americanote.user.repository.UserFlavourRepository;
 import com.coffee.americanote.user.repository.UserRepository;
 import com.coffee.americanote.user.repository.UserTokenRepository;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,8 +56,11 @@ public class MyPageService {
         List<Flavour> preferFlavours = userPreferRequest.flavours()
                 .stream().map(Flavour::valueOfLabel).toList();
 
-        Map<Flavour, UserFlavour> existingFlavourMap = existingUserFlavours.stream()
-                .collect(Collectors.toMap(UserFlavour::getFlavour, f -> f));
+        Map<Flavour, UserFlavour> existingFlavourMap = Optional.ofNullable(existingUserFlavours)
+                .map(flavours -> flavours.stream()
+                        .collect(Collectors.toMap(UserFlavour::getFlavour, f -> f)))
+                .orElse(Collections.emptyMap());
+
 
         // 새로운 향들 처리
         for (Flavour prefer : preferFlavours) {
@@ -74,7 +79,7 @@ public class MyPageService {
         userFlavourRepository.deleteAll(existingFlavourMap.values());
 
         // 강도, 산미 update
-        User.updateAcidity(user, Degree.valueOfLabel(userPreferRequest.acidity()));
-        User.updateIntensity(user, Degree.valueOfLabel(userPreferRequest.intensity()));
+        user.updateAcidity(Degree.valueOfLabel(userPreferRequest.acidity()));
+        user.updateIntensity(Degree.valueOfLabel(userPreferRequest.intensity()));
     }
 }
