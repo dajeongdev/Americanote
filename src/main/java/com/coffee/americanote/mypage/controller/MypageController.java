@@ -27,7 +27,7 @@ public class MypageController {
     @Operation(summary = "summary: 마이페이지 조회", description = "description : return user data / token required!")
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
-    @GetMapping("/mypage")
+    @GetMapping("")
     ResponseEntity<CommonResponse<UserResponse>> getMyData(HttpServletRequest request) {
         return new ResponseEntity<>(new CommonResponse<>(
                 "마이페이지", myPageService.getMyData(request.getHeader(HEADER_STRING))), HttpStatus.OK);
@@ -36,7 +36,7 @@ public class MypageController {
     @Operation(summary = "summary: 내 취향 커피 고르기", description = "description : return ok / token required!")
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
-    @PutMapping("/choose/prefer")
+    @PutMapping("/choose-prefer")
     ResponseEntity<Void> updatePrefer(@RequestBody UserPreferRequest userPreferRequest, HttpServletRequest request){
         myPageService.updatePrefer(request.getHeader(HEADER_STRING), userPreferRequest);
         return new ResponseEntity<>(null, HttpStatus.OK);
