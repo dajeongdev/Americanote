@@ -1,6 +1,7 @@
 package com.coffee.americanote.user.controller;
 
 import com.coffee.americanote.common.response.CommonResponse;
+import com.coffee.americanote.user.domain.request.UserPreferRequest;
 import com.coffee.americanote.user.domain.response.UserResponse;
 import com.coffee.americanote.user.service.MyPageService;
 import com.coffee.americanote.common.response.BasicApiSwaggerResponse;
@@ -45,5 +46,15 @@ public class UserController {
     ResponseEntity<CommonResponse<UserResponse>> getMyData(
             @RequestHeader(value = "Authorization") String accessToken) {
         return new ResponseEntity<>(new CommonResponse<>("마이페이지", myPageService.getMyData(accessToken)), HttpStatus.OK);
+    }
+
+    @Operation(summary = "summary: 내 취향 커피 고르기", description = "description : return ok")
+    @BasicApiSwaggerResponse
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
+    @PutMapping("/choose/prefer")
+    ResponseEntity<Void> updatePrefer(@RequestHeader(value = "Authorization") String accessToken,
+                                      @RequestBody UserPreferRequest userPreferRequest){
+        myPageService.updatePrefer(accessToken, userPreferRequest);
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 }
