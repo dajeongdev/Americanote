@@ -2,9 +2,10 @@ package com.coffee.americanote.mypage.controller;
 
 import com.coffee.americanote.common.response.BasicApiSwaggerResponse;
 import com.coffee.americanote.common.response.CommonResponse;
+import com.coffee.americanote.mypage.domain.response.UserLikeCafeResponse;
+import com.coffee.americanote.mypage.service.MyPageService;
 import com.coffee.americanote.user.domain.request.UserPreferRequest;
 import com.coffee.americanote.user.domain.response.UserResponse;
-import com.coffee.americanote.mypage.service.MyPageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Mypage", description = "마이페이지 관련 API입니다.")
 @RequestMapping("/api/mypage")
@@ -40,5 +43,14 @@ public class MypageController {
     ResponseEntity<Void> updatePrefer(@RequestBody UserPreferRequest userPreferRequest, HttpServletRequest request){
         myPageService.updatePrefer(request.getHeader(HEADER_STRING), userPreferRequest);
         return new ResponseEntity<>(null, HttpStatus.OK);
+    }
+
+    @Operation(summary = "summary: 좋아요 목록", description = "description : return user like cafe list / token required!")
+    @BasicApiSwaggerResponse
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "applicaion/json"))
+    @GetMapping("/like")
+    ResponseEntity<CommonResponse<List<UserLikeCafeResponse>>> getAllUserLikeCafe(HttpServletRequest request) {
+        return new ResponseEntity<>(new CommonResponse<>("마이페이지 좋아요 목록 조회",
+                myPageService.getAllUserLikeCafe(request.getHeader(HEADER_STRING))), HttpStatus.OK);
     }
 }
