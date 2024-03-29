@@ -1,12 +1,12 @@
 package com.coffee.americanote.mypage.service;
 
+import com.coffee.americanote.cafe.domain.response.CafeSearchResponse;
 import com.coffee.americanote.cafe.repository.querydsl.CafeQueryRepository;
 import com.coffee.americanote.common.entity.Degree;
 import com.coffee.americanote.common.entity.ErrorCode;
 import com.coffee.americanote.common.entity.Flavour;
 import com.coffee.americanote.common.exception.UserException;
 import com.coffee.americanote.common.validator.CommonValidator;
-import com.coffee.americanote.mypage.domain.response.UserLikeCafeResponse;
 import com.coffee.americanote.security.jwt.util.JwtTokenProvider;
 import com.coffee.americanote.user.domain.entity.User;
 import com.coffee.americanote.user.domain.entity.UserFlavour;
@@ -14,7 +14,6 @@ import com.coffee.americanote.user.domain.request.UserPreferRequest;
 import com.coffee.americanote.user.domain.response.UserResponse;
 import com.coffee.americanote.user.repository.UserFlavourRepository;
 import com.coffee.americanote.user.repository.UserRepository;
-import com.coffee.americanote.user.repository.UserTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -81,7 +80,7 @@ public class MyPageService {
         user.updateIntensity(userPreferRequest.intensity() != null ? Degree.valueOfLabel(userPreferRequest.intensity()) : null);
     }
 
-    public List<UserLikeCafeResponse> getAllUserLikeCafe(String accessToken) {
+    public List<CafeSearchResponse> getAllUserLikeCafe(String accessToken) {
         CommonValidator.notNullOrThrow(accessToken, "AccessToken이 없습니다.");
         Long userId = jwtTokenProvider.getUserId(accessToken);
         return cafeQueryRepository.getAllUserLikeCafe(userId);

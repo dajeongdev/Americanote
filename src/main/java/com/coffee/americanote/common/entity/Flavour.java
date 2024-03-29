@@ -13,7 +13,7 @@ public enum Flavour {
     HERBY("허브"),
     MALTY("맥아"),
     NUTTY("견과류"),
-    FLORAL("꽃향"),
+    FLORAL("꽃"),
     SMOKY("스모키"),
     SPICY("향신료");
 

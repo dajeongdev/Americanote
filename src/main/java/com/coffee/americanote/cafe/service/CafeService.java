@@ -5,7 +5,9 @@ import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
 import com.coffee.americanote.cafe.domain.response.CafeDetailResponse;
 import com.coffee.americanote.cafe.domain.response.CafePreviewResponse;
 import com.coffee.americanote.cafe.domain.response.CafeResponse;
+import com.coffee.americanote.cafe.domain.response.CafeSearchResponse;
 import com.coffee.americanote.cafe.repository.CafeRepository;
+import com.coffee.americanote.cafe.repository.querydsl.CafeQueryRepository;
 import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.repository.CoffeeRepository;
 import com.coffee.americanote.coffee.service.CoffeeService;
@@ -19,18 +21,12 @@ import com.coffee.americanote.security.jwt.util.JwtTokenProvider;
 import com.coffee.americanote.user.domain.entity.User;
 import com.coffee.americanote.user.domain.entity.UserFlavour;
 import com.coffee.americanote.user.repository.UserRepository;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -44,6 +40,7 @@ public class CafeService {
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final CafeQueryRepository cafeQueryRepository;
 
     public List<CafeResponse> getAllCafe() {
         List<CafeResponse> allCafe = new ArrayList<>();
@@ -163,5 +160,11 @@ public class CafeService {
             result.add(new CafePreviewResponse(cafe, reviews, hasLike));
         }
         return result;
+    }
+
+    public List<CafeSearchResponse> getAllSearchCafe(String keyword, String accessToken) {
+        Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
+        // TODO 토큰 있을 때 최근 검색어 등록
+        return cafeQueryRepository.getAllSearchCafe(keyword, userId);
     }
 }
