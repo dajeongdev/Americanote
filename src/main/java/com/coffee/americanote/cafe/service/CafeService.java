@@ -8,21 +8,18 @@ import com.coffee.americanote.cafe.domain.response.CafeResponse;
 import com.coffee.americanote.cafe.repository.CafeRepository;
 import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.domain.response.CoffeeResponse;
-import com.coffee.americanote.coffee.domain.response.CoffeeResponse.CoffeeFlavourResponse;
 import com.coffee.americanote.coffee.service.CoffeeService;
 import com.coffee.americanote.common.entity.ErrorCode;
 import com.coffee.americanote.common.entity.Flavour;
-import com.coffee.americanote.common.exception.TokenException;
 import com.coffee.americanote.common.exception.UserException;
 import com.coffee.americanote.common.validator.CommonValidator;
 import com.coffee.americanote.like.repository.LikeRepository;
 import com.coffee.americanote.review.domain.entity.Review;
 import com.coffee.americanote.review.repository.ReviewRepository;
+import com.coffee.americanote.security.jwt.util.JwtTokenProvider;
 import com.coffee.americanote.user.domain.entity.User;
 import com.coffee.americanote.user.domain.entity.UserFlavour;
-import com.coffee.americanote.user.domain.entity.UserToken;
 import com.coffee.americanote.user.repository.UserRepository;
-import com.coffee.americanote.user.repository.UserTokenRepository;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -44,8 +41,8 @@ public class CafeService {
     private final CoffeeService coffeeService;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
-    private final UserTokenRepository userTokenRepository;
     private final LikeRepository likeRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public List<CafeResponse> getAllCafe() {
         List<CafeResponse> allCafe = new ArrayList<>();
@@ -68,9 +65,8 @@ public class CafeService {
     public CafeDetailResponse getCafeDetail(Long cafeId, String token) {
         Boolean hasLike = Boolean.FALSE;
         if (token != null) {
-            UserToken userToken = userTokenRepository.findByAccessToken(token)
-                    .orElseThrow(() -> new TokenException(ErrorCode.EXPIRED_TOKEN));
-            User user = userRepository.findById(userToken.getUserId())
+            Long userId = jwtTokenProvider.getUserId(token);
+            User user = userRepository.findById(userId)
                     .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
 
             if (likeRepository.existsByUserIdAndCafeId(user.getId(), cafeId)) {
@@ -86,10 +82,10 @@ public class CafeService {
     }
 
     public List<CafePreviewResponse> recommendCafes(String token) {
-        UserToken userToken = userTokenRepository.findByAccessToken(token)
-                .orElseThrow(() -> new TokenException(ErrorCode.EXPIRED_TOKEN));
-        User user = userRepository.findById(userToken.getUserId())
+        Long userId = jwtTokenProvider.getUserId(token);
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+
         List<UserFlavour> userFlavours = user.getFlavours();
 
         // 모든 커피 정보 가져오기
