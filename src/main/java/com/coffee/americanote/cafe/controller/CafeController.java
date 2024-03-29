@@ -4,6 +4,7 @@ import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
 import com.coffee.americanote.cafe.domain.response.CafeDetailResponse;
 import com.coffee.americanote.cafe.domain.response.CafePreviewResponse;
 import com.coffee.americanote.cafe.domain.response.CafeResponse;
+import com.coffee.americanote.cafe.domain.response.CafeSearchResponse;
 import com.coffee.americanote.cafe.service.CafeService;
 import com.coffee.americanote.common.response.BasicApiSwaggerResponse;
 import com.coffee.americanote.common.response.CommonResponse;
@@ -12,18 +13,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Tag(name = "Cafe", description = "카페 관련 API입니다.")
 @RequestMapping("/api/cafe")
@@ -41,7 +37,6 @@ public class CafeController {
     ResponseEntity<CommonResponse<List<CafeResponse>>> getAllCafe() {
         return new ResponseEntity<>(new CommonResponse<>("모든 카페 조회", cafeService.getAllCafe()), HttpStatus.OK);
     }
-
 
     @Operation(summary = "summary : 필터링 검색", description = "description : return cafes coordinate")
     @BasicApiSwaggerResponse
@@ -65,5 +60,16 @@ public class CafeController {
     @GetMapping("/recommend")
     ResponseEntity<CommonResponse<List<CafePreviewResponse>>> getRecommendCafes(HttpServletRequest request) {
         return new ResponseEntity<>(new CommonResponse<>("추천 카페 리스트", cafeService.recommendCafes(request.getHeader(HEADER_STRING))), HttpStatus.OK);
+    }
+
+    @Operation(summary = "summary : 카페 검색", description = "description : return searching cafe list")
+    @BasicApiSwaggerResponse
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
+    @GetMapping("/search")
+    ResponseEntity<CommonResponse<List<CafeSearchResponse>>> getAllSearchCafe(
+            @RequestParam(value = "keyword") String keyword, HttpServletRequest request) {
+        String accessToken = request.getHeader(HEADER_STRING);
+        return new ResponseEntity<>(new CommonResponse<>(
+                "카페 검색 목록 조회", cafeService.getAllSearchCafe(keyword, accessToken)), HttpStatus.OK);
     }
 }
