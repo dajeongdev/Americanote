@@ -2,6 +2,7 @@ package com.coffee.americanote.cafe.controller;
 
 import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
 import com.coffee.americanote.cafe.domain.response.CafeDetailResponse;
+import com.coffee.americanote.cafe.domain.response.CafePreviewResponse;
 import com.coffee.americanote.cafe.domain.response.CafeResponse;
 import com.coffee.americanote.cafe.service.CafeService;
 import com.coffee.americanote.common.response.BasicApiSwaggerResponse;
@@ -41,20 +42,13 @@ public class CafeController {
         return new ResponseEntity<>(new CommonResponse<>("모든 카페 조회", cafeService.getAllCafe()), HttpStatus.OK);
     }
 
-    @Operation(summary = "summary : 지도로 이동하기", description = "description : return coordinate")
-    @BasicApiSwaggerResponse
-    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
-    @GetMapping("/location")
-    ResponseEntity<CommonResponse<CafeResponse>> getCoordinate(@RequestParam("id") Long id) {
-        return new ResponseEntity<>(new CommonResponse<>("카페 좌표 조회", cafeService.getCoordinate(id)), HttpStatus.OK);
-    }
 
     @Operation(summary = "summary : 필터링 검색", description = "description : return cafes coordinate")
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/filter")
     ResponseEntity<CommonResponse<Set<CafeResponse>>> searchCafes(@RequestBody SearchCafeRequest request) {
-        return new ResponseEntity<>(new CommonResponse<>("카페 필터링 검색", cafeService.searchCafe(request)), HttpStatus.OK);
+        return new ResponseEntity<>(new CommonResponse<>("카페 필터링 검색", cafeService.searchCafeByFiltering(request)), HttpStatus.OK);
     }
 
     @Operation(summary = "summary : 카페 바텀시트", description = "description : return cafe detail info / token required!")
@@ -63,5 +57,13 @@ public class CafeController {
     @GetMapping("/info")
     ResponseEntity<CommonResponse<CafeDetailResponse>> getCafeDetail(@RequestParam("id") Long id, HttpServletRequest request) {
         return new ResponseEntity<>(new CommonResponse<>("카페 정보 보기", cafeService.getCafeDetail(id, request.getHeader(HEADER_STRING))), HttpStatus.OK);
+    }
+
+    @Operation(summary = "summary : 취향에 맞는 카페", description = "description : return cafe preview info / token required!")
+    @BasicApiSwaggerResponse
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
+    @GetMapping("/recommend")
+    ResponseEntity<CommonResponse<List<CafePreviewResponse>>> getRecommendCafes(HttpServletRequest request) {
+        return new ResponseEntity<>(new CommonResponse<>("추천 카페 리스트", cafeService.recommendCafes(request.getHeader(HEADER_STRING))), HttpStatus.OK);
     }
 }

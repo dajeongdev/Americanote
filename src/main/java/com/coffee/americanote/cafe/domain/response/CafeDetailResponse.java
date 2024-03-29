@@ -8,16 +8,20 @@ import java.util.List;
 
 public record CafeDetailResponse(
         Long cafeId,
+        Double latitude,
+        Double longitude,
         String imageUrl,
         String cafeName,
         Double avgStar,
         CoffeeResponse coffeeDetail,
         List<ReviewResponse> reviews,
-        Boolean isHeart
+        Boolean hasLike
 ) {
-    public CafeDetailResponse(Cafe cafe, List<Review> reviews, Boolean isHeart) {
+    public CafeDetailResponse(Cafe cafe, List<Review> reviews, Boolean hasLike) {
         this(
                 cafe.getId(),
+                cafe.getLatitude(),
+                cafe.getLongitude(),
                 cafe.getImageUrl(),
                 cafe.getName(),
                 Math.round((reviews.isEmpty() ? 0.0 :
@@ -25,7 +29,7 @@ public record CafeDetailResponse(
                                 .orElse(0.0)) * 10.0) / 10.0,
                 new CoffeeResponse(cafe.getCoffees().get(0), cafe.getCoffees().get(0).getFlavours()),
                 reviews.stream().map(ReviewResponse::new).toList(),
-                isHeart
+                hasLike
         );
     }
 }
