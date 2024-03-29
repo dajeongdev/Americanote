@@ -1,28 +1,27 @@
 package com.coffee.americanote.mypage.service;
 
-import com.coffee.americanote.common.entity.ErrorCode;
-import com.coffee.americanote.common.exception.TokenException;
-import com.coffee.americanote.common.exception.UserException;
+import com.coffee.americanote.cafe.repository.querydsl.CafeQueryRepository;
 import com.coffee.americanote.common.entity.Degree;
+import com.coffee.americanote.common.entity.ErrorCode;
 import com.coffee.americanote.common.entity.Flavour;
+import com.coffee.americanote.common.exception.UserException;
+import com.coffee.americanote.common.validator.CommonValidator;
+import com.coffee.americanote.mypage.domain.response.UserLikeCafeResponse;
+import com.coffee.americanote.security.jwt.util.JwtTokenProvider;
 import com.coffee.americanote.user.domain.entity.User;
 import com.coffee.americanote.user.domain.entity.UserFlavour;
-import com.coffee.americanote.user.domain.entity.UserToken;
 import com.coffee.americanote.user.domain.request.UserPreferRequest;
 import com.coffee.americanote.user.domain.response.UserResponse;
 import com.coffee.americanote.user.repository.UserFlavourRepository;
 import com.coffee.americanote.user.repository.UserRepository;
 import com.coffee.americanote.user.repository.UserTokenRepository;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,12 +31,13 @@ public class MyPageService {
     private final UserRepository userRepository;
     private final UserTokenRepository userTokenRepository;
     private final UserFlavourRepository userFlavourRepository;
-
+    private final JwtTokenProvider jwtTokenProvider;
+    private final CafeQueryRepository cafeQueryRepository;
 
     public UserResponse getMyData(String accessToken) {
-        UserToken userToken = userTokenRepository.findByAccessToken(accessToken)
-                .orElseThrow(() -> new TokenException(ErrorCode.EXPIRED_TOKEN));
-        User user = userRepository.findById(userToken.getUserId())
+        CommonValidator.notNullOrThrow(accessToken, "AccessToken이 없습니다.");
+        Long userId = jwtTokenProvider.getUserId(accessToken);
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
 
         List<UserFlavour> flavours = new ArrayList<>(user.getFlavours());
@@ -46,9 +46,9 @@ public class MyPageService {
 
     @Transactional
     public void updatePrefer(String accessToken, UserPreferRequest userPreferRequest) {
-        UserToken userToken = userTokenRepository.findByAccessToken(accessToken)
-                .orElseThrow(() -> new TokenException(ErrorCode.EXPIRED_TOKEN));
-        User user = userRepository.findById(userToken.getUserId())
+        CommonValidator.notNullOrThrow(accessToken, "AccessToken이 없습니다.");
+        Long userId = jwtTokenProvider.getUserId(accessToken);
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
 
         List<UserFlavour> existingUserFlavours = userFlavourRepository.findAllByUser(user);
@@ -60,7 +60,6 @@ public class MyPageService {
                 .map(flavours -> flavours.stream()
                         .collect(Collectors.toMap(UserFlavour::getFlavour, f -> f)))
                 .orElse(Collections.emptyMap());
-
 
         // 새로운 향들 처리
         for (Flavour prefer : preferFlavours) {
@@ -81,5 +80,11 @@ public class MyPageService {
         // 강도, 산미 update
         user.updateAcidity(Degree.valueOfLabel(userPreferRequest.acidity()));
         user.updateIntensity(Degree.valueOfLabel(userPreferRequest.intensity()));
+    }
+
+    public List<UserLikeCafeResponse> getAllUserLikeCafe(String accessToken) {
+        CommonValidator.notNullOrThrow(accessToken, "AccessToken이 없습니다.");
+        Long userId = jwtTokenProvider.getUserId(accessToken);
+        return cafeQueryRepository.getAllUserLikeCafe(userId);
     }
 }
