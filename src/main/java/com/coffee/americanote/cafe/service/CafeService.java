@@ -9,6 +9,7 @@ import com.coffee.americanote.cafe.repository.CafeRepository;
 import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.domain.response.CoffeeResponse;
 import com.coffee.americanote.coffee.service.CoffeeService;
+import com.coffee.americanote.common.entity.Degree;
 import com.coffee.americanote.common.entity.ErrorCode;
 import com.coffee.americanote.common.entity.Flavour;
 import com.coffee.americanote.common.exception.UserException;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -92,7 +94,7 @@ public class CafeService {
         List<CoffeeResponse> allCoffeeData = coffeeService.getAllCoffeeData();
 
         // 각 커피에 대한 우선순위 부여
-        HashMap<CoffeeResponse, Integer> priorityMap = calculatePriorities(user, userFlavours, allCoffeeData);
+        HashMap<CoffeeResponse, Double> priorityMap = calculatePriorities(user, userFlavours, allCoffeeData);
 
         // 5명 뽑기
         List<CoffeeResponse> topCoffees = selectTopPriorityCoffees(priorityMap, 5);
@@ -101,12 +103,12 @@ public class CafeService {
         return createRecCafeResponseList(topCoffees, user);
     }
 
-    private HashMap<CoffeeResponse, Integer> calculatePriorities(User user, List<UserFlavour> userFlavours,
+    private HashMap<CoffeeResponse, Double> calculatePriorities(User user, List<UserFlavour> userFlavours,
                                                                  List<CoffeeResponse> allCoffeeData) {
         // 커피들의 우선순위를 저장하는 map
-        HashMap<CoffeeResponse, Integer> priorityMap = new HashMap<>();
+        HashMap<CoffeeResponse, Double> priorityMap = new HashMap<>();
         allCoffeeData.forEach(coffeeResponse -> {
-            int priority = 0;
+            double priority = 0;
             // 여기서 향, 산미, 강도 일치하는지 확인하여 우선순위 계산
             priority += calculatePriorityForMatchingAttributes(coffeeResponse, user, userFlavours);
             priorityMap.put(coffeeResponse, priority);
@@ -114,9 +116,9 @@ public class CafeService {
         return priorityMap;
     }
 
-    private int calculatePriorityForMatchingAttributes(CoffeeResponse coffeeResponse, User user,
+    private double calculatePriorityForMatchingAttributes(CoffeeResponse coffeeResponse, User user,
                                                            List<UserFlavour> userFlavours) {
-        int priority = 0;
+        double priority = 0;
         // 향 일치 개수
         int matchingFlavours = (int) coffeeResponse.flavours().stream()
                 .flatMap(flavour -> userFlavours.stream()
@@ -125,21 +127,26 @@ public class CafeService {
                         .filter(userFlavourLabel -> userFlavourLabel.equals(flavour.flavour())))
                 .count();
         priority += matchingFlavours;
-        // 강도 일치하면 +1
-        if (coffeeResponse.intensity().equals(user.getIntensity().getLabel())){
-            priority++;
-        }
-        // 산미 일치하면 +1
-        if (coffeeResponse.acidity().equals(user.getAcidity().getLabel())) {
-            priority++;
-        }
+        // 강도 일치하면 +1 / 1단계 차이나면 +0.5 / 2단계 차이나면 +0
+        priority += 1 - Math.abs(
+                Degree.valueOfLabel(coffeeResponse.intensity()).getWeight()
+                        - user.getIntensity().getWeight());
+        // 산미 일치하면 +1 / 1단계 차이나면 +0.5 / 2단계 차이나면 +0
+        priority += 1 - Math.abs(
+                Degree.valueOfLabel(coffeeResponse.acidity()).getWeight()
+                        - user.getAcidity().getWeight());
+
         return priority;
     }
 
-    private List<CoffeeResponse> selectTopPriorityCoffees(Map<CoffeeResponse, Integer> priorityMap, long limitSize) {
+    private List<CoffeeResponse> selectTopPriorityCoffees(Map<CoffeeResponse, Double> priorityMap, long limitSize) {
+        Comparator<Map.Entry<CoffeeResponse, Double>> randomComparator =
+                Entry.<CoffeeResponse, Double>comparingByValue()
+                .thenComparing(entry -> Math.random());
+
         return priorityMap.entrySet()
                 .stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .sorted(randomComparator.reversed())
                 .limit(limitSize)
                 .map(Map.Entry::getKey)
                 .toList();
