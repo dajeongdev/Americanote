@@ -42,13 +42,6 @@ public class CafeController {
         return new ResponseEntity<>(new CommonResponse<>("모든 카페 조회", cafeService.getAllCafe()), HttpStatus.OK);
     }
 
-    @Operation(summary = "summary : 지도로 이동하기", description = "description : return coordinate")
-    @BasicApiSwaggerResponse
-    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
-    @GetMapping("/location")
-    ResponseEntity<CommonResponse<CafeResponse>> getCoordinate(@RequestParam("id") Long id) {
-        return new ResponseEntity<>(new CommonResponse<>("카페 좌표 조회", cafeService.getCoordinate(id)), HttpStatus.OK);
-    }
 
     @Operation(summary = "summary : 필터링 검색", description = "description : return cafes coordinate")
     @BasicApiSwaggerResponse

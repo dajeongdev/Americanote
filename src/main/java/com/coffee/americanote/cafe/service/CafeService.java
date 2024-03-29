@@ -55,12 +55,6 @@ public class CafeService {
         return allCafe;
     }
 
-    public CafeResponse getCoordinate(Long cafeId) {
-        Optional<Cafe> cafe = cafeRepository.findById(cafeId);
-        CommonValidator.notNullOrThrow(cafe.orElse(null), ErrorCode.RESOURCE_NOT_FOUND.getErrorMessage());
-        return new CafeResponse(cafe.get());
-    }
-
     public Set<CafeResponse> searchCafeByFiltering(SearchCafeRequest request) {
         List<Coffee> coffees = coffeeService.findAllBySearchOptions(request);
 
