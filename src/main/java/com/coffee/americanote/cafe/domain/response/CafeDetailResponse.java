@@ -8,6 +8,8 @@ import java.util.List;
 
 public record CafeDetailResponse(
         Long cafeId,
+        Double latitude,
+        Double longitude,
         String imageUrl,
         String cafeName,
         Double avgStar,
@@ -18,6 +20,8 @@ public record CafeDetailResponse(
     public CafeDetailResponse(Cafe cafe, List<Review> reviews, Boolean hasLike) {
         this(
                 cafe.getId(),
+                cafe.getLatitude(),
+                cafe.getLongitude(),
                 cafe.getImageUrl(),
                 cafe.getName(),
                 Math.round((reviews.isEmpty() ? 0.0 :
