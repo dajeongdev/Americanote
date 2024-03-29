@@ -7,10 +7,9 @@ import com.coffee.americanote.cafe.domain.response.CafePreviewResponse;
 import com.coffee.americanote.cafe.domain.response.CafeResponse;
 import com.coffee.americanote.cafe.repository.CafeRepository;
 import com.coffee.americanote.coffee.domain.entity.Coffee;
-import com.coffee.americanote.coffee.domain.response.CoffeeResponse;
+import com.coffee.americanote.coffee.repository.CoffeeRepository;
 import com.coffee.americanote.coffee.service.CoffeeService;
 import com.coffee.americanote.common.entity.ErrorCode;
-import com.coffee.americanote.common.entity.Flavour;
 import com.coffee.americanote.common.exception.UserException;
 import com.coffee.americanote.common.validator.CommonValidator;
 import com.coffee.americanote.like.repository.LikeRepository;
@@ -26,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +39,7 @@ public class CafeService {
 
     private final CafeRepository cafeRepository;
     private final CoffeeService coffeeService;
+    private final CoffeeRepository coffeeRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final LikeRepository likeRepository;
@@ -89,74 +90,77 @@ public class CafeService {
         List<UserFlavour> userFlavours = user.getFlavours();
 
         // 모든 커피 정보 가져오기
-        List<CoffeeResponse> allCoffeeData = coffeeService.getAllCoffeeData();
+        List<Coffee> allCoffeeData = coffeeRepository.findAll();
 
         // 각 커피에 대한 우선순위 부여
-        HashMap<CoffeeResponse, Integer> priorityMap = calculatePriorities(user, userFlavours, allCoffeeData);
+        HashMap<Coffee, Double> priorityMap = calculatePriorities(user, userFlavours, allCoffeeData);
 
         // 5명 뽑기
-        List<CoffeeResponse> topCoffees = selectTopPriorityCoffees(priorityMap, 5);
+        List<Coffee> topCoffees = selectTopPriorityCoffees(priorityMap, 5);
 
         // response로 변환 후 반환
         return createRecCafeResponseList(topCoffees, user);
     }
 
-    private HashMap<CoffeeResponse, Integer> calculatePriorities(User user, List<UserFlavour> userFlavours,
-                                                                 List<CoffeeResponse> allCoffeeData) {
+    private HashMap<Coffee, Double> calculatePriorities(User user, List<UserFlavour> userFlavours,
+                                                                 List<Coffee> allCoffeeData) {
         // 커피들의 우선순위를 저장하는 map
-        HashMap<CoffeeResponse, Integer> priorityMap = new HashMap<>();
-        allCoffeeData.forEach(coffeeResponse -> {
-            int priority = 0;
+        HashMap<Coffee, Double> priorityMap = new HashMap<>();
+        allCoffeeData.forEach(coffee -> {
+            double priority = 0;
             // 여기서 향, 산미, 강도 일치하는지 확인하여 우선순위 계산
-            priority += calculatePriorityForMatchingAttributes(coffeeResponse, user, userFlavours);
-            priorityMap.put(coffeeResponse, priority);
+            priority += calculatePriorityForMatchingAttributes(coffee, user, userFlavours);
+            priorityMap.put(coffee, priority);
         });
         return priorityMap;
     }
 
-    private int calculatePriorityForMatchingAttributes(CoffeeResponse coffeeResponse, User user,
+    private double calculatePriorityForMatchingAttributes(Coffee coffee, User user,
                                                            List<UserFlavour> userFlavours) {
-        int priority = 0;
+        double priority = 0;
         // 향 일치 개수
-        int matchingFlavours = (int) coffeeResponse.flavours().stream()
+        int matchingFlavours = (int) coffee.getFlavours().stream()
                 .flatMap(flavour -> userFlavours.stream()
                         .map(UserFlavour::getFlavour)
-                        .map(Flavour::getLabel)
-                        .filter(userFlavourLabel -> userFlavourLabel.equals(flavour.flavour())))
+                        .filter(userFlavour -> userFlavour.equals(flavour.getFlavour())))
                 .count();
         priority += matchingFlavours;
-        // 강도 일치하면 +1
-        if (coffeeResponse.intensity().equals(user.getIntensity().getLabel())){
-            priority++;
-        }
-        // 산미 일치하면 +1
-        if (coffeeResponse.acidity().equals(user.getAcidity().getLabel())) {
-            priority++;
-        }
+        // 강도 일치하면 +1 / 1단계 차이나면 +0.5 / 2단계 차이나면 +0
+        priority += user.getIntensity() != null ? 1 - Math.abs(
+                coffee.getIntensity().getWeight()
+                        - user.getIntensity().getWeight()) : 0;
+        // 산미 일치하면 +1 / 1단계 차이나면 +0.5 / 2단계 차이나면 +0
+        priority += user.getAcidity() != null ? 1 - Math.abs(
+                coffee.getAcidity().getWeight()
+                        - user.getAcidity().getWeight()) : 0;
+
         return priority;
     }
 
-    private List<CoffeeResponse> selectTopPriorityCoffees(Map<CoffeeResponse, Integer> priorityMap, long limitSize) {
+    private List<Coffee> selectTopPriorityCoffees(Map<Coffee, Double> priorityMap, long limitSize) {
+        Comparator<Map.Entry<Coffee, Double>> randomComparator =
+                Entry.<Coffee, Double>comparingByValue()
+                .thenComparing(entry -> Math.random());
+
         return priorityMap.entrySet()
                 .stream()
-                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                .sorted(randomComparator.reversed())
                 .limit(limitSize)
                 .map(Map.Entry::getKey)
                 .toList();
     }
 
-    private List<CafePreviewResponse> createRecCafeResponseList(List<CoffeeResponse> topCoffees, User user) {
+    private List<CafePreviewResponse> createRecCafeResponseList(List<Coffee> topCoffees, User user) {
         List<CafePreviewResponse> result = new ArrayList<>();
 
-        for (CoffeeResponse coffee : topCoffees) {
+        for (Coffee coffee : topCoffees) {
             // cafe
-            Optional<Cafe> cafe = cafeRepository.findById(coffee.cafeId());
-            CommonValidator.notNullOrThrow(cafe.orElse(null), ErrorCode.RESOURCE_NOT_FOUND.getErrorMessage());
+            Cafe cafe = coffee.getCafe();
             // reviews
-            List<Review> reviews = reviewRepository.findAllByCafe(cafe.get());
+            List<Review> reviews = reviewRepository.findAllByCafe(cafe);
             // hasLike
-            boolean hasLike = likeRepository.existsByUserIdAndCafeId(user.getId(), coffee.cafeId());
-            result.add(new CafePreviewResponse(cafe.get(), reviews, hasLike));
+            boolean hasLike = likeRepository.existsByUserIdAndCafeId(user.getId(), coffee.getCafe().getId());
+            result.add(new CafePreviewResponse(cafe, reviews, hasLike));
         }
         return result;
     }

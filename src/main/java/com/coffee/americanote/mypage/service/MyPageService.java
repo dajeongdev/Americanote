@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 public class MyPageService {
 
     private final UserRepository userRepository;
-    private final UserTokenRepository userTokenRepository;
     private final UserFlavourRepository userFlavourRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final CafeQueryRepository cafeQueryRepository;
@@ -78,8 +77,8 @@ public class MyPageService {
         userFlavourRepository.deleteAll(existingFlavourMap.values());
 
         // 강도, 산미 update
-        user.updateAcidity(Degree.valueOfLabel(userPreferRequest.acidity()));
-        user.updateIntensity(Degree.valueOfLabel(userPreferRequest.intensity()));
+        user.updateAcidity(userPreferRequest.acidity() != null ? Degree.valueOfLabel(userPreferRequest.acidity()) : null);
+        user.updateIntensity(userPreferRequest.intensity() != null ? Degree.valueOfLabel(userPreferRequest.intensity()) : null);
     }
 
     public List<UserLikeCafeResponse> getAllUserLikeCafe(String accessToken) {
