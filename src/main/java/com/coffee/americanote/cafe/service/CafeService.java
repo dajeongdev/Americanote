@@ -10,7 +10,6 @@ import com.coffee.americanote.cafe.repository.CafeRepository;
 import com.coffee.americanote.cafe.repository.querydsl.CafeQueryRepository;
 import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.repository.CoffeeRepository;
-import com.coffee.americanote.coffee.service.CoffeeService;
 import com.coffee.americanote.common.entity.ErrorCode;
 import com.coffee.americanote.common.exception.UserException;
 import com.coffee.americanote.common.validator.CommonValidator;
@@ -34,7 +33,6 @@ import java.util.Map.Entry;
 public class CafeService {
 
     private final CafeRepository cafeRepository;
-    private final CoffeeService coffeeService;
     private final CoffeeRepository coffeeRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
@@ -45,19 +43,13 @@ public class CafeService {
     public List<CafeResponse> getAllCafe() {
         List<CafeResponse> allCafe = new ArrayList<>();
         for (Cafe cafe : cafeRepository.findAll()) {
-            allCafe.add(new CafeResponse(cafe));
+            allCafe.add(new CafeResponse(cafe.getId(), cafe.getLatitude(), cafe.getLongitude()));
         }
         return allCafe;
     }
 
     public Set<CafeResponse> searchCafeByFiltering(SearchCafeRequest request) {
-        List<Coffee> coffees = coffeeService.findAllBySearchOptions(request);
-
-        Set<CafeResponse> result = new HashSet<>();
-        for (Coffee coffee : coffees) {
-            result.add(new CafeResponse(coffee.getCafe()));
-        }
-        return result;
+        return cafeQueryRepository.getAllFilteringCafe(request);
     }
 
     public CafeDetailResponse getCafeDetail(Long cafeId, String token) {
