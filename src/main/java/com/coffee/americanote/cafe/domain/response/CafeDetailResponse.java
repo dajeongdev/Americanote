@@ -13,9 +13,9 @@ public record CafeDetailResponse(
         Double avgStar,
         CoffeeResponse coffeeDetail,
         List<ReviewResponse> reviews,
-        Boolean isHeart
+        Boolean hasLike
 ) {
-    public CafeDetailResponse(Cafe cafe, List<Review> reviews, Boolean isHeart) {
+    public CafeDetailResponse(Cafe cafe, List<Review> reviews, Boolean hasLike) {
         this(
                 cafe.getId(),
                 cafe.getImageUrl(),
@@ -25,7 +25,7 @@ public record CafeDetailResponse(
                                 .orElse(0.0)) * 10.0) / 10.0,
                 new CoffeeResponse(cafe.getCoffees().get(0), cafe.getCoffees().get(0).getFlavours()),
                 reviews.stream().map(ReviewResponse::new).toList(),
-                isHeart
+                hasLike
         );
     }
 }

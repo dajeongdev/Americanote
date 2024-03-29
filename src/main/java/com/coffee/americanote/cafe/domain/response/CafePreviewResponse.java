@@ -13,9 +13,9 @@ public record CafePreviewResponse(
         List<CoffeeFlavourResponse> flavours,
         String intensity,
         String acidity,
-        Boolean isHeart
+        Boolean hasLike
 ) {
-    public CafePreviewResponse(Cafe cafe, List<Review> reviews, Boolean isHeart) {
+    public CafePreviewResponse(Cafe cafe, List<Review> reviews, Boolean hasLike) {
         this(
                 cafe.getId(),
                 cafe.getImageUrl(),
@@ -27,7 +27,7 @@ public record CafePreviewResponse(
                         .stream().map(CoffeeFlavourResponse::new).toList(),
                 cafe.getCoffees().get(0).getIntensity().getLabel(),
                 cafe.getCoffees().get(0).getAcidity().getLabel(),
-                isHeart
+                hasLike
                 );
     }
 }
