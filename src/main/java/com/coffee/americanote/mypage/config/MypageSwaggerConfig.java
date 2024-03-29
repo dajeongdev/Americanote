@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 class MypageSwaggerConfig {
 
-    // 목차 생성, Swaggeer 내 동일한 메소드 이름 불가
     @Bean
     GroupedOpenApi mypageDocs() {
         return GroupedOpenApi.builder()
