@@ -2,6 +2,7 @@ package com.coffee.americanote.cafe.controller;
 
 import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
 import com.coffee.americanote.cafe.domain.response.CafeDetailResponse;
+import com.coffee.americanote.cafe.domain.response.CafePreviewResponse;
 import com.coffee.americanote.cafe.domain.response.CafeResponse;
 import com.coffee.americanote.cafe.service.CafeService;
 import com.coffee.americanote.common.response.BasicApiSwaggerResponse;
@@ -63,5 +64,13 @@ public class CafeController {
     @GetMapping("/info")
     ResponseEntity<CommonResponse<CafeDetailResponse>> getCafeDetail(@RequestParam("id") Long id, HttpServletRequest request) {
         return new ResponseEntity<>(new CommonResponse<>("카페 정보 보기", cafeService.getCafeDetail(id, request.getHeader(HEADER_STRING))), HttpStatus.OK);
+    }
+
+    @Operation(summary = "summary : 취향에 맞는 카페", description = "description : return cafe preview info / token required!")
+    @BasicApiSwaggerResponse
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
+    @GetMapping("/recommend")
+    ResponseEntity<CommonResponse<List<CafePreviewResponse>>> getRecommendCafes(HttpServletRequest request) {
+        return new ResponseEntity<>(new CommonResponse<>("추천 카페 리스트", cafeService.recommendCafes(request.getHeader(HEADER_STRING))), HttpStatus.OK);
     }
 }
