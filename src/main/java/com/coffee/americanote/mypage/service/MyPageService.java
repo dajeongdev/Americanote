@@ -61,7 +61,6 @@ public class MyPageService {
                         .collect(Collectors.toMap(UserFlavour::getFlavour, f -> f)))
                 .orElse(Collections.emptyMap());
 
-
         // 새로운 향들 처리
         for (Flavour prefer : preferFlavours) {
             if (existingFlavourMap.containsKey(prefer)) {
@@ -79,7 +78,7 @@ public class MyPageService {
         userFlavourRepository.deleteAll(existingFlavourMap.values());
 
         // 강도, 산미 update
-        user.updateAcidity(Degree.valueOfLabel(userPreferRequest.acidity()));
-        user.updateIntensity(Degree.valueOfLabel(userPreferRequest.intensity()));
+        user.updateAcidity(userPreferRequest.acidity() != null ? Degree.valueOfLabel(userPreferRequest.acidity()) : null);
+        user.updateIntensity(userPreferRequest.intensity() != null ? Degree.valueOfLabel(userPreferRequest.intensity()) : null);
     }
 }
