@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 public class MyPageService {
 
     private final UserRepository userRepository;
-    private final UserTokenRepository userTokenRepository;
     private final UserFlavourRepository userFlavourRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final CafeQueryRepository cafeQueryRepository;
