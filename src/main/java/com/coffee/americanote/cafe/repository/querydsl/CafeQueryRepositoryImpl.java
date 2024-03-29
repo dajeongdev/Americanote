@@ -1,18 +1,27 @@
 package com.coffee.americanote.cafe.repository.querydsl;
 
 import com.coffee.americanote.cafe.domain.entity.QCafe;
+import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
+import com.coffee.americanote.cafe.domain.response.CafeResponse;
 import com.coffee.americanote.cafe.domain.response.CafeSearchResponse;
 import com.coffee.americanote.coffee.domain.entity.QCoffee;
 import com.coffee.americanote.coffee.domain.entity.QCoffeeFlavour;
+import com.coffee.americanote.common.entity.Degree;
+import com.coffee.americanote.common.entity.Flavour;
+import com.coffee.americanote.common.exception.CommonException;
 import com.coffee.americanote.like.domain.QLike;
 import com.coffee.americanote.review.domain.entity.QReview;
 import com.coffee.americanote.user.domain.entity.QUser;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.MathExpressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQueryFactory;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -72,5 +81,61 @@ public class CafeQueryRepositoryImpl implements CafeQueryRepository {
                 .groupBy(cafe.id)
                 .stream()
                 .toList();
+    }
+
+    @Override
+    public Set<CafeResponse> getAllFilteringCafe(SearchCafeRequest request) {
+        return queryFactory.select(Projections.constructor(CafeResponse.class,
+                cafe.id, cafe.latitude, cafe.longitude
+                ))
+                .from(cafe)
+                .innerJoin(coffee).on(coffee.cafe.id.eq(cafe.id))
+                .innerJoin(coffeeFlavour).on(coffeeFlavour.coffee.id.eq(coffee.id))
+                .where(inFlavour(request.flavours()),
+                        priceRange(request.priceRange()),
+                        inIntensity(request.intensities()),
+                        inAcidity(request.acidities()))
+                .groupBy(cafe.id)
+                .stream().collect(Collectors.toSet());
+    }
+
+    private BooleanExpression inFlavour(List<String> flavours) {
+        if (flavours == null || flavours.isEmpty()) {
+            return coffeeFlavour.flavour.isNotNull();
+        }
+        if (flavours.size() > 3) {
+            throw new CommonException("허용된 개수 초과", HttpStatus.BAD_REQUEST);
+        }
+        List<Flavour> flavourEnums = flavours.stream()
+                .map(Flavour::valueOfLabel).toList();
+        return coffeeFlavour.flavour.in(flavourEnums);
+    }
+
+    private BooleanExpression priceRange(String range) {
+        if (range == null) return coffee.price.isNotNull();
+        return switch (range) {
+            case "<" -> coffee.price.lt(5000);
+            case "=" -> coffee.price.eq(5000);
+            case ">" -> coffee.price.gt(5000);
+            default -> coffee.price.isNotNull();
+        };
+    }
+
+    private BooleanExpression inIntensity(List<String> intensities) {
+        if (intensities == null || intensities.isEmpty()) {
+            return coffee.intensity.isNotNull();
+        }
+        List<Degree> intensityEnums = intensities.stream()
+                .map(Degree::valueOfLabel).toList();
+        return coffee.intensity.in(intensityEnums);
+    }
+
+    private BooleanExpression inAcidity(List<String> acidities) {
+        if (acidities == null || acidities.isEmpty()) {
+            return coffee.acidity.isNotNull();
+        }
+        List<Degree> acidityEnums = acidities.stream()
+                .map(Degree::valueOfLabel).toList();
+        return coffee.acidity.in(acidityEnums);
     }
 }
