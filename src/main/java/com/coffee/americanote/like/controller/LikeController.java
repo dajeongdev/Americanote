@@ -16,8 +16,8 @@ public class LikeController {
 
     private final LikeService likeService;
 
-    @PostMapping("/{cafeId}")
-    ResponseEntity<Void> toggleLike(@PathVariable("cafeId") Long cafeId, HttpServletRequest request) {
+    @PostMapping("")
+    ResponseEntity<Void> toggleLike(@RequestParam("cafeId") Long cafeId, HttpServletRequest request) {
         likeService.toggleLike(cafeId, request);
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
