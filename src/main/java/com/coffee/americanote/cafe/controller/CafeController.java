@@ -55,7 +55,7 @@ public class CafeController {
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/filter")
     ResponseEntity<CommonResponse<Set<CafeResponse>>> searchCafes(@RequestBody SearchCafeRequest request) {
-        return new ResponseEntity<>(new CommonResponse<>("카페 필터링 검색", cafeService.searchCafe(request)), HttpStatus.OK);
+        return new ResponseEntity<>(new CommonResponse<>("카페 필터링 검색", cafeService.searchCafeByFiltering(request)), HttpStatus.OK);
     }
 
     @Operation(summary = "summary : 카페 바텀시트", description = "description : return cafe detail info / token required!")

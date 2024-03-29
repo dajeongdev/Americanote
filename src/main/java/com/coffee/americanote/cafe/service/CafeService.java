@@ -61,7 +61,7 @@ public class CafeService {
         return new CafeResponse(cafe.get());
     }
 
-    public Set<CafeResponse> searchCafe(SearchCafeRequest request) {
+    public Set<CafeResponse> searchCafeByFiltering(SearchCafeRequest request) {
         List<Coffee> coffees = coffeeService.findAllBySearchOptions(request);
 
         Set<CafeResponse> result = new HashSet<>();
