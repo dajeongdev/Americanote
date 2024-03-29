@@ -1,7 +1,6 @@
 package com.coffee.americanote.cafe.domain.response;
 
 import com.coffee.americanote.cafe.domain.entity.Cafe;
-import com.coffee.americanote.coffee.domain.response.CoffeeResponse.CoffeeFlavourResponse;
 import com.coffee.americanote.review.domain.entity.Review;
 import java.util.List;
 
@@ -10,7 +9,7 @@ public record CafePreviewResponse(
         String imageUrl,
         String cafeName,
         Double avgStar,
-        List<CoffeeFlavourResponse> flavours,
+        List<String> flavours,
         String intensity,
         String acidity,
         Boolean hasLike
@@ -24,7 +23,7 @@ public record CafePreviewResponse(
                         reviews.stream().mapToDouble(Review::getStar).average()
                                 .orElse(0.0)) * 10.0) / 10.0,
                 cafe.getCoffees().get(0).getFlavours()
-                        .stream().map(CoffeeFlavourResponse::new).toList(),
+                        .stream().map(coffeeFlavour -> coffeeFlavour.getFlavour().getLabel()).toList(),
                 cafe.getCoffees().get(0).getIntensity().getLabel(),
                 cafe.getCoffees().get(0).getAcidity().getLabel(),
                 hasLike

@@ -7,7 +7,7 @@ import java.util.List;
 public record CoffeeResponse(
         Long cafeId,
         String name,
-        List<CoffeeFlavourResponse> flavours,
+        List<String> flavours,
         String intensity,
         String acidity,
         Integer price
@@ -16,21 +16,10 @@ public record CoffeeResponse(
         this(
                 coffee.getCafe().getId(),
                 coffee.getName(),
-                flavours.stream().map(CoffeeFlavourResponse::new)
-                                .toList(),
+                flavours.stream().map(coffeeFlavour -> coffeeFlavour.getFlavour().getLabel()).toList(),
                 coffee.getIntensity().getLabel(),
                 coffee.getAcidity().getLabel(),
                 coffee.getPrice()
         );
-    }
-
-    public record CoffeeFlavourResponse(
-            String flavour
-    ){
-        public CoffeeFlavourResponse(CoffeeFlavour coffeeFlavour) {
-            this(
-                    coffeeFlavour.getFlavour().getLabel()
-            );
-        }
     }
 }
