@@ -46,6 +46,9 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "user")
     private List<UserFlavour> flavours = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user")
+    private List<RecentSearch> recentSearches = new ArrayList<>();
+
     public static User toUserEntity(KakaoLoginRequest request) {
         return User.builder()
                 .kakaoId(request.kakaoId())
