@@ -92,7 +92,7 @@ public class CafeQueryRepositoryImpl implements CafeQueryRepository {
                 .innerJoin(coffee).on(coffee.cafe.id.eq(cafe.id))
                 .innerJoin(coffeeFlavour).on(coffeeFlavour.coffee.id.eq(coffee.id))
                 .where(inFlavour(request.flavours()),
-                        priceRange(request.priceRange()),
+                        priceRange(request.priceRanges()),
                         inIntensity(request.intensities()),
                         inAcidity(request.acidities()))
                 .groupBy(cafe.id)
@@ -111,18 +111,28 @@ public class CafeQueryRepositoryImpl implements CafeQueryRepository {
         return coffeeFlavour.flavour.in(flavourEnums);
     }
 
-    private BooleanExpression priceRange(String range) {
-        if (range == null) return coffee.price.isNotNull();
-        return switch (range) {
-            case "<" -> coffee.price.lt(5000);
-            case "=" -> coffee.price.eq(5000);
-            case ">" -> coffee.price.gt(5000);
-            default -> coffee.price.isNotNull();
-        };
+    private BooleanExpression priceRange(List<String> ranges) {
+        if (ranges == null || ranges.isEmpty() || ranges.size() == 3) {
+            return coffee.price.isNotNull();
+        }
+        BooleanExpression expression = null;
+
+        for (String range : ranges) {
+            switch (range) {
+                case "<" -> expression = (expression == null) ?
+                        coffee.price.lt(5000) : expression.or(coffee.price.lt(5000));
+                case "=" -> expression = (expression == null) ?
+                        coffee.price.eq(5000) : expression.or(coffee.price.eq(5000));
+                case ">" -> expression = (expression == null) ?
+                        coffee.price.gt(5000) : expression.or(coffee.price.gt(5000));
+                default -> throw new CommonException("존재하지 않는 범위", HttpStatus.NOT_FOUND);
+            }
+        }
+        return expression != null ? expression : coffee.price.isNotNull();
     }
 
     private BooleanExpression inIntensity(List<String> intensities) {
-        if (intensities == null || intensities.isEmpty()) {
+        if (intensities == null || intensities.isEmpty() || intensities.size() == 3) {
             return coffee.intensity.isNotNull();
         }
         List<Degree> intensityEnums = intensities.stream()
@@ -131,7 +141,7 @@ public class CafeQueryRepositoryImpl implements CafeQueryRepository {
     }
 
     private BooleanExpression inAcidity(List<String> acidities) {
-        if (acidities == null || acidities.isEmpty()) {
+        if (acidities == null || acidities.isEmpty() || acidities.size() == 3) {
             return coffee.acidity.isNotNull();
         }
         List<Degree> acidityEnums = acidities.stream()
