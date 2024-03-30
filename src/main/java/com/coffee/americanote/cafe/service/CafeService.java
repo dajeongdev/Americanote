@@ -1,6 +1,7 @@
 package com.coffee.americanote.cafe.service;
 
 import com.coffee.americanote.cafe.domain.entity.Cafe;
+import com.coffee.americanote.cafe.domain.entity.RecentSearch;
 import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
 import com.coffee.americanote.cafe.domain.response.CafeDetailResponse;
 import com.coffee.americanote.cafe.domain.response.CafePreviewResponse;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.Map.Entry;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -156,11 +158,21 @@ public class CafeService {
         return result;
     }
 
+    @Transactional
     public List<CafeSearchResponse> getAllSearchCafe(String keyword, String accessToken) {
         Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
-        // TODO 토큰 있을 때 최근 검색어 등록
-        if (userId != 0) {
-
+        // 토큰 있을 때 최근 검색어 등록
+        // 최근 검색어에 이미 keyword가 있으면 등록X
+        // keyword가 없으면 등록X
+        if (userId != 0 && !recentSearchRepository.existsByUserIdAndSearchWord(userId, keyword) && !keyword.isEmpty()) {
+            // 최근 검색어 5개일 경우 -> 제일 오래된 검색어 삭제 -> 새로운 검색어 저장
+            if (recentSearchRepository.countByUserId(userId) == 5) {
+                List<RecentSearch> allByUserId = recentSearchRepository
+                        .findAllByUserIdOrderByCreatedDateAsc(userId);
+                recentSearchRepository.delete(allByUserId.get(0));
+            }
+            // 최근 검색어 5개 미만일 경우 -> 새로운 검색어 저장
+            recentSearchRepository.save(RecentSearch.toEntity(userId, keyword));
         }
         return cafeQueryRepository.getAllSearchCafe(keyword, userId);
     }

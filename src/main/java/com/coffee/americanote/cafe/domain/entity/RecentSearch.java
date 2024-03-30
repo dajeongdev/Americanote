@@ -1,15 +1,11 @@
 package com.coffee.americanote.cafe.domain.entity;
 
-import com.coffee.americanote.user.domain.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
@@ -33,9 +29,8 @@ public class RecentSearch {
     @Column(name = "recent_search_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "search_word", nullable = false)
     private String searchWord;
@@ -43,4 +38,11 @@ public class RecentSearch {
     @CreatedDate
     @Column(name = "created_date", updatable = false)
     private LocalDate createdDate;
+
+    public static RecentSearch toEntity(Long userId, String searchWord) {
+        return RecentSearch.builder()
+                .userId(userId)
+                .searchWord(searchWord)
+                .build();
+    }
 }
