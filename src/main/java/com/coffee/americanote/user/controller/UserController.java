@@ -25,7 +25,12 @@ public class UserController {
     private final UserService userService;
 
     @Operation(summary = "summary : 카카오 로그인",
-            description = "description : return header(accessToken), 취향 여부  / token required(optional)!")
+            description = """
+                    ## 요청 :
+                    - header(Authorization Bearer *토큰* (옵션))
+                    ## 응답 :
+                    - 취향 여부(boolean)
+                    """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
     @GetMapping("/kakao")
@@ -44,7 +49,13 @@ public class UserController {
         return new ResponseEntity<>(new CommonResponse<>("취향 선택 여부", hasPreference), headers, HttpStatus.OK);
     }
 
-    @Operation(summary = "summary : 로그아웃", description = "description : return ok / token required!")
+    @Operation(summary = "summary : 로그아웃",
+            description = """
+                    ## 요청 :
+                    - header(Authorization Bearer *토큰* (필수))
+                    ## 응답 :
+                    - 없음
+                    """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
     @PostMapping("/logout")

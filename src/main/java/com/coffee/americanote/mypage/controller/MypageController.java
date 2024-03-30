@@ -27,7 +27,13 @@ public class MypageController {
     public static final String HEADER_STRING = "Authorization";
     private final MyPageService myPageService;
 
-    @Operation(summary = "summary: 마이페이지 조회", description = "description : return user data / token required!")
+    @Operation(summary = "summary: 마이페이지 조회",
+            description = """
+                    ## 요청 :
+                    - header(Authorization Bearer *토큰* (필수))
+                    ## 응답 :
+                    - 사용자 정보
+                    """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("")
@@ -36,7 +42,13 @@ public class MypageController {
                 "마이페이지", myPageService.getMyData(request.getHeader(HEADER_STRING))), HttpStatus.OK);
     }
 
-    @Operation(summary = "summary: 내 취향 커피 고르기", description = "description : return ok / token required!")
+    @Operation(summary = "summary: 내 취향 커피 고르기",
+            description = """
+                    ## 요청 :
+                    - header(Authorization Bearer *토큰* (필수)), 취향 요청 목록
+                    ## 응답 :
+                    - 없음
+                    """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
     @PutMapping("/choose-prefer")
@@ -45,7 +57,13 @@ public class MypageController {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
-    @Operation(summary = "summary: 좋아요 목록", description = "description : return user like cafe list / token required!")
+    @Operation(summary = "summary: 좋아요 목록",
+            description = """
+                    ## 요청 :
+                    - header(Authorization Bearer *토큰* (필수))
+                    ## 응답 :
+                    - 좋아요한 카페 목록
+                    """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "applicaion/json"))
     @GetMapping("/like")
