@@ -62,7 +62,7 @@ public class CafeController {
         return new ResponseEntity<>(new CommonResponse<>("추천 카페 리스트", cafeService.recommendCafes(request.getHeader(HEADER_STRING))), HttpStatus.OK);
     }
 
-    @Operation(summary = "summary : 카페 검색", description = "description : return searching cafe list")
+    @Operation(summary = "summary : 카페 검색", description = "description : return searching cafe list / token required!")
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/search")
@@ -71,5 +71,15 @@ public class CafeController {
         String accessToken = request.getHeader(HEADER_STRING);
         return new ResponseEntity<>(new CommonResponse<>(
                 "카페 검색 목록 조회", cafeService.getAllSearchCafe(keyword, accessToken)), HttpStatus.OK);
+    }
+
+    @Operation(summary = "summary : 최근 검색어", description = "description : return recent search words / token required!")
+    @BasicApiSwaggerResponse
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
+    @GetMapping("/recent")
+    ResponseEntity<CommonResponse<List<String>>> getAllRecentSearchWord(HttpServletRequest request) {
+        String accessToken = request.getHeader(HEADER_STRING);
+        return new ResponseEntity<>(new CommonResponse<>(
+                "최근 검색어 조회", cafeService.getAllRecentSearchWord(accessToken)), HttpStatus.OK);
     }
 }

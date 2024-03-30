@@ -176,4 +176,10 @@ public class CafeService {
         }
         return cafeQueryRepository.getAllSearchCafe(keyword, userId);
     }
+
+    public List<String> getAllRecentSearchWord(String accessToken) {
+        Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
+        return recentSearchRepository.findAllByUserIdOrderByCreatedDateAsc(userId)
+                .stream().map(RecentSearch::getSearchWord).toList();
+    }
 }
