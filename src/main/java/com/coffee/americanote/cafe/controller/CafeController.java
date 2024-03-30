@@ -41,7 +41,7 @@ public class CafeController {
     @Operation(summary = "summary : 필터링 검색", description = "description : return cafes coordinate")
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
-    @GetMapping("/filter")
+    @PostMapping("/filter")
     ResponseEntity<CommonResponse<Set<CafeResponse>>> searchCafes(@RequestBody SearchCafeRequest request) {
         return new ResponseEntity<>(new CommonResponse<>("카페 필터링 검색", cafeService.searchCafeByFiltering(request)), HttpStatus.OK);
     }
@@ -86,7 +86,7 @@ public class CafeController {
     @Operation(summary = "summary : 검색어 삭제", description = "description : return ok / token required!")
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
-    @DeleteMapping("/research")
+    @DeleteMapping("/search")
     ResponseEntity<Void> deleteRecentSearchWord(
             @RequestParam(value = "keyword") String keyword, HttpServletRequest request) {
         String accessToken = request.getHeader(HEADER_STRING);

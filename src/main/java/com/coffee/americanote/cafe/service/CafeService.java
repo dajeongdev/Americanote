@@ -165,8 +165,7 @@ public class CafeService {
                         cafeId -> likes.stream().anyMatch(like -> Objects.equals(like.getCafeId(), cafeId))
                 ));
 
-        for (Coffee coffee : topCoffees) {
-            Cafe cafe = coffee.getCafe();
+        for (Cafe cafe : cafes) {
             boolean hasLike = likeMap.getOrDefault(cafe.getId(), false);
             List<Review> cafeReviews = reviews.stream()
                     .filter(review -> review.getCafe().equals(cafe))
