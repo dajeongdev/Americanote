@@ -1,7 +1,7 @@
 package com.coffee.americanote.user.service;
 
-import com.coffee.americanote.security.service.CustomUserDetailService;
 import com.coffee.americanote.security.jwt.util.JwtTokenProvider;
+import com.coffee.americanote.security.service.CustomUserDetailService;
 import com.coffee.americanote.user.domain.entity.User;
 import com.coffee.americanote.user.domain.entity.UserToken;
 import com.coffee.americanote.user.domain.request.KakaoLoginRequest;
@@ -14,6 +14,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -32,12 +34,14 @@ public class UserService {
         KakaoLoginRequest kakaoLoginRequest = kakaoLoginService.kakaoOAuth(code);
 
         // 조회해 온 정보로 회원 조회 및 가입
-        User userEntity = User.toUserEntity(kakaoLoginRequest);
-        User user = userRepository.findByKakaoId(kakaoLoginRequest.kakaoId())
-                .orElseGet(() -> userRepository.save(userEntity));
-
-        // 토큰 생성 및 매핑
-        return getAccessToken(user);
+        Optional<UserToken> userTokenOptional = userRepository.findByKakaoId(kakaoLoginRequest.kakaoId());
+        if (userTokenOptional.isPresent() && jwtTokenProvider.validateToken(userTokenOptional.get().getAccessToken())) {
+            UserToken userToken = userTokenOptional.get();
+            userToken.updateToken(userToken.getAccessToken());
+            return userToken.getAccessToken();
+        } else {
+            return getAccessToken(userRepository.save(User.toUserEntity(kakaoLoginRequest)));
+        }
     }
 
     private String getAccessToken(User user) {
