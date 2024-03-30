@@ -7,7 +7,7 @@ import com.coffee.americanote.review.domain.response.ReviewResponse;
 import java.util.List;
 
 public record CafeDetailResponse(
-        Long cafeId,
+        Long id,
         Double latitude,
         Double longitude,
         String imageUrl,
