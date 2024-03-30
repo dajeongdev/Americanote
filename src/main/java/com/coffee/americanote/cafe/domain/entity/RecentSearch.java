@@ -1,5 +1,6 @@
-package com.coffee.americanote.user.domain.entity;
+package com.coffee.americanote.cafe.domain.entity;
 
+import com.coffee.americanote.user.domain.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;

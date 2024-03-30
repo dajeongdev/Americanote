@@ -19,6 +19,7 @@ import com.coffee.americanote.review.repository.ReviewRepository;
 import com.coffee.americanote.security.jwt.util.JwtTokenProvider;
 import com.coffee.americanote.user.domain.entity.User;
 import com.coffee.americanote.user.domain.entity.UserFlavour;
+import com.coffee.americanote.cafe.repository.RecentSearchRepository;
 import com.coffee.americanote.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,7 @@ public class CafeService {
     private final LikeRepository likeRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final CafeQueryRepository cafeQueryRepository;
+    private final RecentSearchRepository recentSearchRepository;
 
     public List<CafeResponse> getAllCafe() {
         List<CafeResponse> allCafe = new ArrayList<>();
@@ -157,6 +159,9 @@ public class CafeService {
     public List<CafeSearchResponse> getAllSearchCafe(String keyword, String accessToken) {
         Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
         // TODO 토큰 있을 때 최근 검색어 등록
+        if (userId != 0) {
+
+        }
         return cafeQueryRepository.getAllSearchCafe(keyword, userId);
     }
 }

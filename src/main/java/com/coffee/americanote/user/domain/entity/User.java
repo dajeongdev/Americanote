@@ -1,5 +1,6 @@
 package com.coffee.americanote.user.domain.entity;
 
+import com.coffee.americanote.cafe.domain.entity.RecentSearch;
 import com.coffee.americanote.common.entity.BaseEntity;
 import com.coffee.americanote.common.entity.UserRole;
 import com.coffee.americanote.common.entity.Degree;
