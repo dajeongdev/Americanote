@@ -1,6 +1,7 @@
 package com.coffee.americanote.cafe.service;
 
 import com.coffee.americanote.cafe.domain.entity.Cafe;
+import com.coffee.americanote.cafe.domain.entity.RecentSearch;
 import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
 import com.coffee.americanote.cafe.domain.response.CafeDetailResponse;
 import com.coffee.americanote.cafe.domain.response.CafePreviewResponse;
@@ -11,6 +12,7 @@ import com.coffee.americanote.cafe.repository.querydsl.CafeQueryRepository;
 import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.repository.CoffeeRepository;
 import com.coffee.americanote.common.entity.ErrorCode;
+import com.coffee.americanote.common.exception.CommonException;
 import com.coffee.americanote.common.exception.UserException;
 import com.coffee.americanote.common.validator.CommonValidator;
 import com.coffee.americanote.like.repository.LikeRepository;
@@ -19,13 +21,16 @@ import com.coffee.americanote.review.repository.ReviewRepository;
 import com.coffee.americanote.security.jwt.util.JwtTokenProvider;
 import com.coffee.americanote.user.domain.entity.User;
 import com.coffee.americanote.user.domain.entity.UserFlavour;
+import com.coffee.americanote.cafe.repository.RecentSearchRepository;
 import com.coffee.americanote.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.Map.Entry;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -39,6 +44,7 @@ public class CafeService {
     private final LikeRepository likeRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final CafeQueryRepository cafeQueryRepository;
+    private final RecentSearchRepository recentSearchRepository;
 
     public List<CafeResponse> getAllCafe() {
         List<CafeResponse> allCafe = new ArrayList<>();
@@ -154,9 +160,41 @@ public class CafeService {
         return result;
     }
 
+    @Transactional
     public List<CafeSearchResponse> getAllSearchCafe(String keyword, String accessToken) {
         Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
-        // TODO 토큰 있을 때 최근 검색어 등록
+        // 토큰 있을 때 최근 검색어 등록
+        // 최근 검색어에 이미 keyword가 있으면 등록X
+        // keyword가 ""(empty)면 등록X
+        if (userId != 0 && !recentSearchRepository.existsByUserIdAndSearchWord(userId, keyword) && !keyword.isEmpty()) {
+            // 최근 검색어 5개일 경우 -> 제일 오래된 검색어 삭제 -> 새로운 검색어 저장
+            if (recentSearchRepository.countByUserId(userId) == 5) {
+                List<RecentSearch> allByUserId = recentSearchRepository
+                        .findAllByUserIdOrderByCreatedDateAsc(userId);
+                recentSearchRepository.delete(allByUserId.get(0));
+            }
+            // 최근 검색어 5개 미만일 경우 -> 새로운 검색어 저장
+            recentSearchRepository.save(RecentSearch.toEntity(userId, keyword));
+        }
         return cafeQueryRepository.getAllSearchCafe(keyword, userId);
+    }
+
+    public List<String> getAllRecentSearchWord(String accessToken) {
+        Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
+        return recentSearchRepository.findAllByUserIdOrderByCreatedDateAsc(userId)
+                .stream().map(RecentSearch::getSearchWord).toList();
+    }
+
+    @Transactional
+    public void deleteRecentSearchWord(String keyword, String accessToken) {
+        Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
+        if (userId == 0) {
+            throw new UserException(ErrorCode.NOT_FOUND_USER);
+        }
+        RecentSearch deleteEntity = recentSearchRepository.findByUserIdAndSearchWord(userId, keyword);
+        if (deleteEntity == null) {
+            throw new CommonException("존재하지 않는 검색어 입니다.", HttpStatus.NOT_FOUND);
+        }
+        recentSearchRepository.delete(deleteEntity);
     }
 }
