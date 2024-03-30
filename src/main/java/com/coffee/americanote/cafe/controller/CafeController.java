@@ -30,7 +30,13 @@ public class CafeController {
     public static final String HEADER_STRING = "Authorization";
     private final CafeService cafeService;
 
-    @Operation(summary = "summary : 모든 카페 조회", description = "description : return all cafe list")
+    @Operation(summary = "summary : 모든 카페 조회",
+            description = """
+                    ## 요청 :
+                    - 없음
+                    ## 응답 :
+                    - [카페 아이디, 좌표] 리스트
+                    """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/all")
@@ -38,15 +44,27 @@ public class CafeController {
         return new ResponseEntity<>(new CommonResponse<>("모든 카페 조회", cafeService.getAllCafe()), HttpStatus.OK);
     }
 
-    @Operation(summary = "summary : 필터링 검색", description = "description : return cafes coordinate")
+    @Operation(summary = "summary : 필터링 검색",
+            description = """
+                    ## 요청 :
+                    - 가격 범위, 향, 강도, 산미
+                    ## 응답 :
+                    - [카페 아이디, 좌표] 리스트
+                    """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
-    @GetMapping("/filter")
+    @PostMapping("/filter")
     ResponseEntity<CommonResponse<Set<CafeResponse>>> searchCafes(@RequestBody SearchCafeRequest request) {
         return new ResponseEntity<>(new CommonResponse<>("카페 필터링 검색", cafeService.searchCafeByFiltering(request)), HttpStatus.OK);
     }
 
-    @Operation(summary = "summary : 카페 바텀시트", description = "description : return cafe detail info / token required!")
+    @Operation(summary = "summary : 카페 바텀시트",
+            description = """
+                    ## 요청 :
+                    - 카페 아이디, header(Authorization Bearer *토큰* (옵션))
+                    ## 응답 :
+                    카페 정보, 평점, 커피 정보, 리뷰들, 좋아요 여부(boolean)
+                    """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/info")
@@ -54,7 +72,13 @@ public class CafeController {
         return new ResponseEntity<>(new CommonResponse<>("카페 정보 보기", cafeService.getCafeDetail(id, request.getHeader(HEADER_STRING))), HttpStatus.OK);
     }
 
-    @Operation(summary = "summary : 취향에 맞는 카페", description = "description : return cafe preview info / token required!")
+    @Operation(summary = "summary : 취향에 맞는 카페",
+            description = """
+                    ## 요청 :
+                    - header(Authorization Bearer *토큰* (필수!))
+                    ## 응답 :
+                    - [카페 정보, 평점, 커피 향/강도/산미, 좋아요 여부(boolean)] 리스트
+                    """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/recommend")
@@ -62,7 +86,13 @@ public class CafeController {
         return new ResponseEntity<>(new CommonResponse<>("추천 카페 리스트", cafeService.recommendCafes(request.getHeader(HEADER_STRING))), HttpStatus.OK);
     }
 
-    @Operation(summary = "summary : 카페 검색", description = "description : return searching cafe list / token required!")
+    @Operation(summary = "summary : 카페 검색",
+            description = """
+                    ## 요청 :
+                    - 검색어, header(Authorization Bearer *토큰* (옵션))
+                    ## 응답 :
+                    - [카페 정보, 커피 향/강도/산미, 평점, 좋아요 여부(boolean)] 리스트
+                    """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/search")
@@ -73,7 +103,13 @@ public class CafeController {
                 "카페 검색 목록 조회", cafeService.getAllSearchCafe(keyword, accessToken)), HttpStatus.OK);
     }
 
-    @Operation(summary = "summary : 최근 검색어", description = "description : return recent search words / token required!")
+    @Operation(summary = "summary : 최근 검색어",
+            description = """
+                    ## 요청 :
+                    - header(Authorization Bearer *토큰* (옵션))
+                    ## 응답 :
+                    - 검색어 리스트 (로그인 안했으면 빈 리스트 return)
+                    """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/recent")
@@ -83,10 +119,16 @@ public class CafeController {
                 "최근 검색어 조회", cafeService.getAllRecentSearchWord(accessToken)), HttpStatus.OK);
     }
 
-    @Operation(summary = "summary : 검색어 삭제", description = "description : return ok / token required!")
+    @Operation(summary = "summary : 검색어 삭제",
+            description = """
+                    ## 요청 :
+                    - 삭제할 검색어, header(Authorization Bearer *토큰* (필수!))
+                    ## 응답 :
+                    - ok
+                    """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
-    @DeleteMapping("/research")
+    @DeleteMapping("/search")
     ResponseEntity<Void> deleteRecentSearchWord(
             @RequestParam(value = "keyword") String keyword, HttpServletRequest request) {
         String accessToken = request.getHeader(HEADER_STRING);

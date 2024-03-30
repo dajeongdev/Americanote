@@ -15,6 +15,7 @@ import com.coffee.americanote.common.entity.ErrorCode;
 import com.coffee.americanote.common.exception.CommonException;
 import com.coffee.americanote.common.exception.UserException;
 import com.coffee.americanote.common.validator.CommonValidator;
+import com.coffee.americanote.like.domain.Like;
 import com.coffee.americanote.like.repository.LikeRepository;
 import com.coffee.americanote.review.domain.entity.Review;
 import com.coffee.americanote.review.repository.ReviewRepository;
@@ -23,6 +24,7 @@ import com.coffee.americanote.user.domain.entity.User;
 import com.coffee.americanote.user.domain.entity.UserFlavour;
 import com.coffee.americanote.cafe.repository.RecentSearchRepository;
 import com.coffee.americanote.user.repository.UserRepository;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -85,7 +87,7 @@ public class CafeService {
         List<UserFlavour> userFlavours = user.getFlavours();
 
         // 모든 커피 정보 가져오기
-        List<Coffee> allCoffeeData = coffeeRepository.findAll();
+        List<Coffee> allCoffeeData = coffeeRepository.findAllWithFlavoursAndCafe();
 
         // 각 커피에 대한 우선순위 부여
         HashMap<Coffee, Double> priorityMap = calculatePriorities(user, userFlavours, allCoffeeData);
@@ -148,14 +150,27 @@ public class CafeService {
     private List<CafePreviewResponse> createRecCafeResponseList(List<Coffee> topCoffees, User user) {
         List<CafePreviewResponse> result = new ArrayList<>();
 
-        for (Coffee coffee : topCoffees) {
-            // cafe
-            Cafe cafe = coffee.getCafe();
-            // reviews
-            List<Review> reviews = reviewRepository.findAllByCafe(cafe);
-            // hasLike
-            boolean hasLike = likeRepository.existsByUserIdAndCafeId(user.getId(), coffee.getCafe().getId());
-            result.add(new CafePreviewResponse(cafe, reviews, hasLike));
+        List<Cafe> cafes = topCoffees.stream().map(Coffee::getCafe).toList();
+
+        // 카페와 리뷰를 한 번에 가져오기
+        List<Review> reviews = reviewRepository.findAllByCafeIn(cafes);
+
+        // 사용자의 카페 좋아요 목록을 가져오기
+        List<Long> cafeIds = topCoffees.stream().map(coffee -> coffee.getCafe().getId()).toList();
+        List<Like> likes = likeRepository.findByUserIdAndCafeIdIn(user.getId(), cafeIds);
+
+        Map<Long, Boolean> likeMap = cafeIds.stream()
+                .collect(Collectors.toMap(
+                        cafeId -> cafeId,
+                        cafeId -> likes.stream().anyMatch(like -> Objects.equals(like.getCafeId(), cafeId))
+                ));
+
+        for (Cafe cafe : cafes) {
+            boolean hasLike = likeMap.getOrDefault(cafe.getId(), false);
+            List<Review> cafeReviews = reviews.stream()
+                    .filter(review -> review.getCafe().equals(cafe))
+                    .toList();
+            result.add(new CafePreviewResponse(cafe, cafeReviews, hasLike));
         }
         return result;
     }
