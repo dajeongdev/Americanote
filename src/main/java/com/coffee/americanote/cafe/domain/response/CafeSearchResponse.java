@@ -10,7 +10,7 @@ import java.util.Arrays;
 @Getter
 public class CafeSearchResponse {
 
-    private final Long cafeId;
+    private final Long id;
     private final String cafeName;
     private final String imageUrl;
     private final CoffeeFlavourDegreeResponse coffeeDetail;
@@ -19,7 +19,7 @@ public class CafeSearchResponse {
 
     public CafeSearchResponse(Long cafeId, String cafeName, String imageUrl, Degree intensity, Degree acidity, String flavours, double avgStar, boolean hasLike) {
 
-        this.cafeId = cafeId;
+        this.id = cafeId;
         this.cafeName = cafeName;
         this.imageUrl = imageUrl;
         this.coffeeDetail = new CoffeeFlavourDegreeResponse(intensity, acidity,
