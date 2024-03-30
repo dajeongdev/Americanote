@@ -12,6 +12,7 @@ import com.coffee.americanote.cafe.repository.querydsl.CafeQueryRepository;
 import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.repository.CoffeeRepository;
 import com.coffee.americanote.common.entity.ErrorCode;
+import com.coffee.americanote.common.exception.CommonException;
 import com.coffee.americanote.common.exception.UserException;
 import com.coffee.americanote.common.validator.CommonValidator;
 import com.coffee.americanote.like.repository.LikeRepository;
@@ -24,6 +25,7 @@ import com.coffee.americanote.cafe.repository.RecentSearchRepository;
 import com.coffee.americanote.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -181,5 +183,18 @@ public class CafeService {
         Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
         return recentSearchRepository.findAllByUserIdOrderByCreatedDateAsc(userId)
                 .stream().map(RecentSearch::getSearchWord).toList();
+    }
+
+    @Transactional
+    public void deleteRecentSearchWord(String keyword, String accessToken) {
+        Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
+        if (userId == 0) {
+            throw new UserException(ErrorCode.NOT_FOUND_USER);
+        }
+        RecentSearch deleteEntity = recentSearchRepository.findByUserIdAndSearchWord(userId, keyword);
+        if (deleteEntity == null) {
+            throw new CommonException("존재하지 않는 검색어 입니다.", HttpStatus.NOT_FOUND);
+        }
+        recentSearchRepository.delete(deleteEntity);
     }
 }

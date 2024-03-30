@@ -82,4 +82,15 @@ public class CafeController {
         return new ResponseEntity<>(new CommonResponse<>(
                 "최근 검색어 조회", cafeService.getAllRecentSearchWord(accessToken)), HttpStatus.OK);
     }
+
+    @Operation(summary = "summary : 검색어 삭제", description = "description : return ok / token required!")
+    @BasicApiSwaggerResponse
+    @ApiResponse(responseCode = "200")
+    @DeleteMapping("/research")
+    ResponseEntity<Void> deleteRecentSearchWord(
+            @RequestParam(value = "keyword") String keyword, HttpServletRequest request) {
+        String accessToken = request.getHeader(HEADER_STRING);
+        cafeService.deleteRecentSearchWord(keyword, accessToken);
+        return new ResponseEntity<>(null, HttpStatus.OK);
+    }
 }

@@ -10,4 +10,6 @@ public interface RecentSearchRepository extends JpaRepository<RecentSearch, Long
     List<RecentSearch> findAllByUserIdOrderByCreatedDateAsc(Long userId);
 
     boolean existsByUserIdAndSearchWord(Long userId, String searchWord);
+
+    RecentSearch findByUserIdAndSearchWord(Long userId, String searchWord);
 }
