@@ -8,6 +8,7 @@ import com.coffee.americanote.cafe.domain.response.CafePreviewResponse;
 import com.coffee.americanote.cafe.domain.response.CafeResponse;
 import com.coffee.americanote.cafe.domain.response.CafeSearchResponse;
 import com.coffee.americanote.cafe.repository.CafeRepository;
+import com.coffee.americanote.cafe.repository.RecentSearchRepository;
 import com.coffee.americanote.cafe.repository.querydsl.CafeQueryRepository;
 import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.repository.CoffeeRepository;
@@ -22,17 +23,16 @@ import com.coffee.americanote.review.repository.ReviewRepository;
 import com.coffee.americanote.security.jwt.util.JwtTokenProvider;
 import com.coffee.americanote.user.domain.entity.User;
 import com.coffee.americanote.user.domain.entity.UserFlavour;
-import com.coffee.americanote.cafe.repository.RecentSearchRepository;
 import com.coffee.americanote.user.repository.UserRepository;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.Map.Entry;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -181,7 +181,8 @@ public class CafeService {
         // 토큰 있을 때 최근 검색어 등록
         // 최근 검색어에 이미 keyword가 있으면 등록X
         // keyword가 ""(empty)면 등록X
-        if (userId != 0 && !recentSearchRepository.existsByUserIdAndSearchWord(userId, keyword) && !keyword.isEmpty()) {
+        if (userId != 0 && !recentSearchRepository.existsByUserIdAndSearchWord(userId, keyword) &&
+                keyword != null && !keyword.equals("undefined")) {
             // 최근 검색어 5개일 경우 -> 제일 오래된 검색어 삭제 -> 새로운 검색어 저장
             if (recentSearchRepository.countByUserId(userId) == 5) {
                 List<RecentSearch> allByUserId = recentSearchRepository
@@ -202,7 +203,7 @@ public class CafeService {
 
     @Transactional
     public void deleteRecentSearchWord(String keyword, String accessToken) {
-        Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
+        final Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
         if (userId == 0) {
             throw new UserException(ErrorCode.NOT_FOUND_USER);
         }
