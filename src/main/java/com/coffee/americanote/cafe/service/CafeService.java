@@ -165,7 +165,7 @@ public class CafeService {
         Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
         // 토큰 있을 때 최근 검색어 등록
         // 최근 검색어에 이미 keyword가 있으면 등록X
-        // keyword가 없으면 등록X
+        // keyword가 ""(empty)면 등록X
         if (userId != 0 && !recentSearchRepository.existsByUserIdAndSearchWord(userId, keyword) && !keyword.isEmpty()) {
             // 최근 검색어 5개일 경우 -> 제일 오래된 검색어 삭제 -> 새로운 검색어 저장
             if (recentSearchRepository.countByUserId(userId) == 5) {
