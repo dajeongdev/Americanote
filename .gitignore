@@ -4,6 +4,7 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+.gitmessage.txt
 
 ### STS ###
 .apt_generated
@@ -35,3 +36,14 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### querydsl Q files ###
+src/main/generated/
+
+### YML files ###
+# Database
+application-database.yml
+# Naver Token
+application-naver-token.yml
+# OAuth2 & JWT
+application-security.yml
