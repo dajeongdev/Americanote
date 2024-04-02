@@ -13,8 +13,6 @@ import com.coffee.americanote.cafe.repository.querydsl.CafeQueryRepository;
 import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.repository.CoffeeRepository;
 import com.coffee.americanote.common.entity.ErrorCode;
-import com.coffee.americanote.common.exception.CommonException;
-import com.coffee.americanote.common.exception.UserException;
 import com.coffee.americanote.common.validator.CommonValidator;
 import com.coffee.americanote.like.domain.Like;
 import com.coffee.americanote.like.repository.LikeRepository;
@@ -26,7 +24,6 @@ import com.coffee.americanote.user.domain.entity.UserFlavour;
 import com.coffee.americanote.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +45,7 @@ public class CafeService {
     private final CafeQueryRepository cafeQueryRepository;
     private final RecentSearchRepository recentSearchRepository;
 
-    public List<CafeResponse> getAllCafe() {
+    public List<CafeResponse> getAllCafes() {
         List<CafeResponse> allCafe = new ArrayList<>();
         for (Cafe cafe : cafeRepository.findAll()) {
             allCafe.add(new CafeResponse(cafe.getId(), cafe.getLatitude(), cafe.getLongitude()));
@@ -64,8 +61,9 @@ public class CafeService {
         Boolean hasLike = Boolean.FALSE;
         if (token != null) {
             Long userId = jwtTokenProvider.getUserId(token);
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+            Optional<User> findUser = userRepository.findById(userId);
+            CommonValidator.notNullOrThrow(findUser, ErrorCode.NOT_FOUND_USER.getErrorMessage());
+            User user = findUser.get();
 
             if (likeRepository.existsByUserIdAndCafeId(user.getId(), cafeId)) {
                 hasLike = Boolean.TRUE;
@@ -73,16 +71,18 @@ public class CafeService {
         }
 
         Optional<Cafe> cafe = cafeRepository.findById(cafeId);
-        CommonValidator.notNullOrThrow(cafe.orElse(null), ErrorCode.RESOURCE_NOT_FOUND.getErrorMessage());
+        CommonValidator.notNullOrThrow(cafe, ErrorCode.NOT_FOUND_CAFE.getErrorMessage());
         List<Review> reviews = reviewRepository.findAllByCafe(cafe.get());
         
         return new CafeDetailResponse(cafe.get(), reviews, hasLike);
     }
 
-    public List<CafePreviewResponse> recommendCafes(String token) {
+    public List<CafePreviewResponse> getRecommendCafes(String token) {
+        CommonValidator.notNullOrThrow(token, ErrorCode.INVALID_TOKEN.getErrorMessage());
         Long userId = jwtTokenProvider.getUserId(token);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+        Optional<User> findUser = userRepository.findById(userId);
+        CommonValidator.notNullOrThrow(findUser, ErrorCode.NOT_FOUND_USER.getErrorMessage());
+        User user = findUser.get();
 
         List<UserFlavour> userFlavours = user.getFlavours();
 
@@ -182,7 +182,7 @@ public class CafeService {
         // 최근 검색어에 이미 keyword가 있으면 등록X
         // keyword가 ""(empty)면 등록X
         if (userId != 0 && !recentSearchRepository.existsByUserIdAndSearchWord(userId, keyword) &&
-                keyword != null && !keyword.equals("undefined")) {
+                !keyword.isEmpty() && !keyword.equals("undefined")) {
             // 최근 검색어 5개일 경우 -> 제일 오래된 검색어 삭제 -> 새로운 검색어 저장
             if (recentSearchRepository.countByUserId(userId) == 5) {
                 List<RecentSearch> allByUserId = recentSearchRepository
@@ -203,14 +203,11 @@ public class CafeService {
 
     @Transactional
     public void deleteRecentSearchWord(String keyword, String accessToken) {
-        final Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
-        if (userId == 0) {
-            throw new UserException(ErrorCode.NOT_FOUND_USER);
-        }
+        CommonValidator.notNullOrThrow(accessToken, ErrorCode.INVALID_TOKEN.getErrorMessage());
+        CommonValidator.hasTextOrThrow(keyword, ErrorCode.NOT_FOUND_KEYWORD.getErrorMessage());
+        Long userId = jwtTokenProvider.getUserId(accessToken);
+
         RecentSearch deleteEntity = recentSearchRepository.findByUserIdAndSearchWord(userId, keyword);
-        if (deleteEntity == null) {
-            throw new CommonException("존재하지 않는 검색어 입니다.", HttpStatus.NOT_FOUND);
-        }
         recentSearchRepository.delete(deleteEntity);
     }
 }

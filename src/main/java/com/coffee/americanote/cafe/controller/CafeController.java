@@ -40,8 +40,8 @@ public class CafeController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/all")
-    ResponseEntity<CommonResponse<List<CafeResponse>>> getAllCafe() {
-        return new ResponseEntity<>(new CommonResponse<>("모든 카페 조회", cafeService.getAllCafe()), HttpStatus.OK);
+    ResponseEntity<CommonResponse<List<CafeResponse>>> getAllCafes() {
+        return new ResponseEntity<>(new CommonResponse<>("모든 카페 조회", cafeService.getAllCafes()), HttpStatus.OK);
     }
 
     @Operation(summary = "summary : 필터링 검색",
@@ -54,7 +54,7 @@ public class CafeController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @PostMapping("/filter")
-    ResponseEntity<CommonResponse<Set<CafeResponse>>> searchCafes(@RequestBody SearchCafeRequest request) {
+    ResponseEntity<CommonResponse<Set<CafeResponse>>> searchCafeByFiltering(@RequestBody SearchCafeRequest request) {
         return new ResponseEntity<>(new CommonResponse<>("카페 필터링 검색", cafeService.searchCafeByFiltering(request)), HttpStatus.OK);
     }
 
@@ -83,7 +83,7 @@ public class CafeController {
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/recommend")
     ResponseEntity<CommonResponse<List<CafePreviewResponse>>> getRecommendCafes(HttpServletRequest request) {
-        return new ResponseEntity<>(new CommonResponse<>("추천 카페 리스트", cafeService.recommendCafes(request.getHeader(HEADER_STRING))), HttpStatus.OK);
+        return new ResponseEntity<>(new CommonResponse<>("추천 카페 리스트", cafeService.getRecommendCafes(request.getHeader(HEADER_STRING))), HttpStatus.OK);
     }
 
     @Operation(summary = "summary : 카페 검색",

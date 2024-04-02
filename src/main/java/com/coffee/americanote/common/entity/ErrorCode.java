@@ -35,7 +35,13 @@ public enum ErrorCode {
     EMPTY_TOKEN(BAD_REQUEST, "토큰이 존재하지 않습니다."),
 
     // user
-    NOT_FOUND_USER(BAD_REQUEST, "존재하지 않는 회원입니다.");
+    NOT_FOUND_USER(BAD_REQUEST, "존재하지 않는 회원입니다."),
+
+    // keyword
+    NOT_FOUND_KEYWORD(BAD_REQUEST, "존재하지 않는 키워드입니다."),
+
+    // cafe
+    NOT_FOUND_CAFE(BAD_REQUEST, "존재하지 않는 카페입니다.");
 
     private final HttpStatus httpStatus;
     private final String errorMessage;
