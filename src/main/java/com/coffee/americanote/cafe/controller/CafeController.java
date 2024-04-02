@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,8 +41,8 @@ public class CafeController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/all")
-    ResponseEntity<CommonResponse<List<CafeResponse>>> getAllCafe() {
-        return new ResponseEntity<>(new CommonResponse<>("모든 카페 조회", cafeService.getAllCafe()), HttpStatus.OK);
+    ResponseEntity<CommonResponse<List<CafeResponse>>> getAllCafes() {
+        return new ResponseEntity<>(new CommonResponse<>("모든 카페 조회", cafeService.getAllCafes()), HttpStatus.OK);
     }
 
     @Operation(summary = "summary : 필터링 검색",
@@ -54,7 +55,7 @@ public class CafeController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @PostMapping("/filter")
-    ResponseEntity<CommonResponse<Set<CafeResponse>>> searchCafes(@RequestBody SearchCafeRequest request) {
+    ResponseEntity<CommonResponse<Set<CafeResponse>>> searchCafeByFiltering(@RequestBody SearchCafeRequest request) {
         return new ResponseEntity<>(new CommonResponse<>("카페 필터링 검색", cafeService.searchCafeByFiltering(request)), HttpStatus.OK);
     }
 
@@ -82,8 +83,8 @@ public class CafeController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/recommend")
-    ResponseEntity<CommonResponse<List<CafePreviewResponse>>> getRecommendCafes(HttpServletRequest request) {
-        return new ResponseEntity<>(new CommonResponse<>("추천 카페 리스트", cafeService.recommendCafes(request.getHeader(HEADER_STRING))), HttpStatus.OK);
+    ResponseEntity<CommonResponse<List<CafePreviewResponse>>> getRecommendCafes(@Valid HttpServletRequest request) {
+        return new ResponseEntity<>(new CommonResponse<>("추천 카페 리스트", cafeService.getRecommendCafes(request.getHeader(HEADER_STRING))), HttpStatus.OK);
     }
 
     @Operation(summary = "summary : 카페 검색",
@@ -130,7 +131,7 @@ public class CafeController {
     @ApiResponse(responseCode = "200")
     @DeleteMapping("/search")
     ResponseEntity<Void> deleteRecentSearchWord(
-            @RequestParam(value = "keyword") String keyword, HttpServletRequest request) {
+            @RequestParam(value = "keyword") String keyword, @Valid HttpServletRequest request) {
         String accessToken = request.getHeader(HEADER_STRING);
         cafeService.deleteRecentSearchWord(keyword, accessToken);
         return new ResponseEntity<>(null, HttpStatus.OK);
