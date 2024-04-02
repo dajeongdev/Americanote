@@ -61,7 +61,7 @@
 
 
 ## 🌱 ERD 🌱
-<img width="833" alt="스크린샷 2024-04-02 21 35 25" src="https://github.com/dajeongdev/Americanote/assets/61612976/ec4d47ab-6e39-4c2d-a45d-eabd42f4e109">
+<img width="1134" alt="스크린샷 2024-04-02 22 51 19" src="https://github.com/dajeongdev/Americanote/assets/61612976/13644c7f-da8a-4707-b7cc-ff5ea12b701c">
 <br/>
 <br/>
 
