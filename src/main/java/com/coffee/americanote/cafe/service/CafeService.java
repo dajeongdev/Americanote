@@ -13,7 +13,6 @@ import com.coffee.americanote.cafe.repository.querydsl.CafeQueryRepository;
 import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.repository.CoffeeRepository;
 import com.coffee.americanote.common.entity.ErrorCode;
-import com.coffee.americanote.common.exception.UserException;
 import com.coffee.americanote.common.validator.CommonValidator;
 import com.coffee.americanote.like.domain.Like;
 import com.coffee.americanote.like.repository.LikeRepository;
@@ -62,8 +61,9 @@ public class CafeService {
         Boolean hasLike = Boolean.FALSE;
         if (token != null) {
             Long userId = jwtTokenProvider.getUserId(token);
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+            Optional<User> findUser = userRepository.findById(userId);
+            CommonValidator.notNullOrThrow(findUser, ErrorCode.NOT_FOUND_USER.getErrorMessage());
+            User user = findUser.get();
 
             if (likeRepository.existsByUserIdAndCafeId(user.getId(), cafeId)) {
                 hasLike = Boolean.TRUE;
@@ -71,16 +71,18 @@ public class CafeService {
         }
 
         Optional<Cafe> cafe = cafeRepository.findById(cafeId);
-        CommonValidator.notNullOrThrow(cafe.orElse(null), ErrorCode.RESOURCE_NOT_FOUND.getErrorMessage());
+        CommonValidator.notNullOrThrow(cafe, ErrorCode.NOT_FOUND_CAFE.getErrorMessage());
         List<Review> reviews = reviewRepository.findAllByCafe(cafe.get());
         
         return new CafeDetailResponse(cafe.get(), reviews, hasLike);
     }
 
     public List<CafePreviewResponse> getRecommendCafes(String token) {
+        CommonValidator.notNullOrThrow(token, ErrorCode.INVALID_TOKEN.getErrorMessage());
         Long userId = jwtTokenProvider.getUserId(token);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
+        Optional<User> findUser = userRepository.findById(userId);
+        CommonValidator.notNullOrThrow(findUser, ErrorCode.NOT_FOUND_USER.getErrorMessage());
+        User user = findUser.get();
 
         List<UserFlavour> userFlavours = user.getFlavours();
 
@@ -201,12 +203,8 @@ public class CafeService {
 
     @Transactional
     public void deleteRecentSearchWord(String keyword, String accessToken) {
-        Long userId = null;
-        if (accessToken == null) {
-            throw new UserException(ErrorCode.NOT_FOUND_USER);
-        } else {
-            userId = jwtTokenProvider.getUserId(accessToken);
-        }
+        CommonValidator.notNullOrThrow(accessToken, ErrorCode.INVALID_TOKEN.getErrorMessage());
+        Long userId = jwtTokenProvider.getUserId(accessToken);
 
         RecentSearch deleteEntity = recentSearchRepository.findByUserIdAndSearchWord(userId, keyword);
         CommonValidator.notNullOrThrow(deleteEntity, ErrorCode.NOT_FOUND_KEYWORD.getErrorMessage());

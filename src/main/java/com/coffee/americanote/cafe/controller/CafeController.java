@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,7 +82,7 @@ public class CafeController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/recommend")
-    ResponseEntity<CommonResponse<List<CafePreviewResponse>>> getRecommendCafes(@Valid HttpServletRequest request) {
+    ResponseEntity<CommonResponse<List<CafePreviewResponse>>> getRecommendCafes(HttpServletRequest request) {
         return new ResponseEntity<>(new CommonResponse<>("추천 카페 리스트", cafeService.getRecommendCafes(request.getHeader(HEADER_STRING))), HttpStatus.OK);
     }
 
@@ -131,7 +130,7 @@ public class CafeController {
     @ApiResponse(responseCode = "200")
     @DeleteMapping("/search")
     ResponseEntity<Void> deleteRecentSearchWord(
-            @RequestParam(value = "keyword") String keyword, @Valid HttpServletRequest request) {
+            @RequestParam(value = "keyword") String keyword, HttpServletRequest request) {
         String accessToken = request.getHeader(HEADER_STRING);
         cafeService.deleteRecentSearchWord(keyword, accessToken);
         return new ResponseEntity<>(null, HttpStatus.OK);
