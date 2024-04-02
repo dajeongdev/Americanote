@@ -33,8 +33,7 @@ public class MyPageService {
     private final CafeQueryRepository cafeQueryRepository;
 
     public UserResponse getMyData(String accessToken) {
-        CommonValidator.notNullOrThrow(accessToken, "AccessToken이 없습니다.");
-        Long userId = jwtTokenProvider.getUserId(accessToken);
+        Long userId = checkAccessToken(accessToken);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
 
@@ -44,8 +43,7 @@ public class MyPageService {
 
     @Transactional
     public void updatePrefer(String accessToken, UserPreferRequest userPreferRequest) {
-        CommonValidator.notNullOrThrow(accessToken, "AccessToken이 없습니다.");
-        Long userId = jwtTokenProvider.getUserId(accessToken);
+        Long userId = checkAccessToken(accessToken);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
 
@@ -81,8 +79,12 @@ public class MyPageService {
     }
 
     public List<CafeSearchResponse> getAllUserLikeCafe(String accessToken) {
-        CommonValidator.notNullOrThrow(accessToken, "AccessToken이 없습니다.");
-        Long userId = jwtTokenProvider.getUserId(accessToken);
+        Long userId = checkAccessToken(accessToken);
         return cafeQueryRepository.getAllUserLikeCafe(userId);
+    }
+
+    private Long checkAccessToken(String accessToken) {
+        CommonValidator.notNullOrThrow(accessToken, ErrorCode.EMPTY_TOKEN.getErrorMessage());
+        return jwtTokenProvider.getUserId(accessToken);
     }
 }

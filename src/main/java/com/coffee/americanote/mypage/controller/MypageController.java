@@ -1,8 +1,8 @@
 package com.coffee.americanote.mypage.controller;
 
+import com.coffee.americanote.cafe.domain.response.CafeSearchResponse;
 import com.coffee.americanote.common.response.BasicApiSwaggerResponse;
 import com.coffee.americanote.common.response.CommonResponse;
-import com.coffee.americanote.cafe.domain.response.CafeSearchResponse;
 import com.coffee.americanote.mypage.service.MyPageService;
 import com.coffee.americanote.user.domain.request.UserPreferRequest;
 import com.coffee.americanote.user.domain.response.UserResponse;
@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,13 +47,14 @@ public class MypageController {
             description = """
                     ## 요청 :
                     - header(Authorization Bearer *토큰* (필수)), 취향 요청 목록
+                    - 요청 에러 시 400 BAD REQUEST
                     ## 응답 :
                     - 없음
                     """)
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
     @PutMapping("/choose-prefer")
-    ResponseEntity<Void> updatePrefer(@RequestBody UserPreferRequest userPreferRequest, HttpServletRequest request){
+    ResponseEntity<Void> updatePrefer(@Valid @RequestBody UserPreferRequest userPreferRequest, HttpServletRequest request){
         myPageService.updatePrefer(request.getHeader(HEADER_STRING), userPreferRequest);
         return new ResponseEntity<>(null, HttpStatus.OK);
     }

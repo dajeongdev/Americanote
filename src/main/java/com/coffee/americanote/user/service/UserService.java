@@ -1,5 +1,7 @@
 package com.coffee.americanote.user.service;
 
+import com.coffee.americanote.common.entity.ErrorCode;
+import com.coffee.americanote.common.validator.CommonValidator;
 import com.coffee.americanote.security.service.CustomUserDetailService;
 import com.coffee.americanote.security.jwt.util.JwtTokenProvider;
 import com.coffee.americanote.user.domain.entity.User;
@@ -71,11 +73,13 @@ public class UserService {
 
     @Transactional
     public void logout(String accessToken) {
+        CommonValidator.notNullOrThrow(accessToken, ErrorCode.EMPTY_TOKEN.getErrorMessage());
         Long userId = jwtTokenProvider.getUserId(accessToken);
         userTokenRepository.deleteByUserId(userId);
     }
 
     public boolean existsPreference(String accessToken) {
+        CommonValidator.notNullOrThrow(accessToken, ErrorCode.EMPTY_TOKEN.getErrorMessage());
         Long userId = jwtTokenProvider.getUserId(accessToken);
         return userRepository.findById(userId).map(User::getIntensity).isPresent();
     }
