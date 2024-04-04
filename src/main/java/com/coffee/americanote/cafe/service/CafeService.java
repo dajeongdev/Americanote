@@ -82,7 +82,7 @@ public class CafeService {
         List<Coffee> topCoffees = selectTopPriorityCoffees(priorityMap, 5);
 
         // response로 변환 후 반환
-        return createRecCafeResponseList(topCoffees, user);
+        return createRecommendCafeResponseList(topCoffees, user);
     }
 
     private HashMap<Coffee, Double> calculatePriorities(User user, List<UserFlavour> userFlavours,
@@ -133,7 +133,7 @@ public class CafeService {
                 .toList();
     }
 
-    private List<CafePreviewResponse> createRecCafeResponseList(List<Coffee> topCoffees, User user) {
+    private List<CafePreviewResponse> createRecommendCafeResponseList(List<Coffee> topCoffees, User user) {
         List<CafePreviewResponse> result = new ArrayList<>();
 
         List<Cafe> cafes = topCoffees.stream().map(Coffee::getCafe).toList();
