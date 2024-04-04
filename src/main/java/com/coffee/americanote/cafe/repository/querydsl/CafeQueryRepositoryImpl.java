@@ -2,6 +2,7 @@ package com.coffee.americanote.cafe.repository.querydsl;
 
 import com.coffee.americanote.cafe.domain.entity.QCafe;
 import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
+import com.coffee.americanote.cafe.domain.response.CafeDetailResponse;
 import com.coffee.americanote.cafe.domain.response.CafeResponse;
 import com.coffee.americanote.cafe.domain.response.CafeSearchResponse;
 import com.coffee.americanote.coffee.domain.entity.QCoffee;
@@ -11,6 +12,7 @@ import com.coffee.americanote.common.entity.Flavour;
 import com.coffee.americanote.common.exception.CommonException;
 import com.coffee.americanote.like.domain.QLike;
 import com.coffee.americanote.review.domain.entity.QReview;
+import com.coffee.americanote.review.domain.response.ReviewResponse;
 import com.coffee.americanote.user.domain.entity.QUser;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -97,6 +99,36 @@ public class CafeQueryRepositoryImpl implements CafeQueryRepository {
                         inAcidity(request.acidities()))
                 .groupBy(cafe.id)
                 .stream().collect(Collectors.toSet());
+    }
+
+    @Override
+    public CafeDetailResponse getCafeDetail(Long cafeId, Long userId) {
+        List<ReviewResponse> reviewResponses = queryFactory.select(
+                        Projections.constructor(ReviewResponse.class, user.nickname, user.profileImageUrl,
+                                review.star, review.content)).from(review).innerJoin(user).on(user.id.eq(review.user.id))
+                .where(review.cafe.id.eq(cafeId)).stream().toList();
+
+        CafeDetailResponse cafeDetailResponse = queryFactory.select(Projections.constructor(CafeDetailResponse.class,
+                        cafe.id, cafe.latitude, cafe.longitude, cafe.imageUrl, cafe.name,
+                        MathExpressions.round(review.star.avg(), 1).as("avgStar"), coffee.name,
+                        Expressions.stringTemplate("group_concat({0})", coffeeFlavour.flavour).as("flavours"),
+                        coffee.intensity, coffee.acidity, coffee.price,
+                        JPAExpressions.selectFrom(like)
+                                .where(like.userId.eq(userId).and(like.cafeId.eq(cafe.id)))
+                                .exists().as("hasLike")
+                ))
+                .from(cafe)
+                .innerJoin(review).on(review.cafe.id.eq(cafe.id))
+                .innerJoin(coffee).on(coffee.cafe.id.eq(cafe.id))
+                .innerJoin(coffeeFlavour).on(coffeeFlavour.coffee.id.eq(coffee.id))
+                .where(cafe.id.eq(cafeId))
+                .groupBy(cafe.id)
+                .fetchOne();
+
+        return new CafeDetailResponse(cafeDetailResponse.id(), cafeDetailResponse.latitude(),
+                cafeDetailResponse.longitude(),
+                cafeDetailResponse.imageUrl(), cafeDetailResponse.cafeName(), cafeDetailResponse.avgStar(),
+                cafeDetailResponse.coffeeDetail(), reviewResponses, cafeDetailResponse.hasLike());
     }
 
     private BooleanExpression inFlavour(List<String> flavours) {

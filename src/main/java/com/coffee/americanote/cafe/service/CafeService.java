@@ -58,27 +58,13 @@ public class CafeService {
     }
 
     public CafeDetailResponse getCafeDetail(Long cafeId, String token) {
-        Boolean hasLike = Boolean.FALSE;
-        if (token != null) {
-            Long userId = jwtTokenProvider.getUserId(token);
-            Optional<User> findUser = userRepository.findById(userId);
-            CommonValidator.notNullOrThrow(findUser, ErrorCode.NOT_FOUND_USER.getErrorMessage());
-            User user = findUser.get();
-
-            if (likeRepository.existsByUserIdAndCafeId(user.getId(), cafeId)) {
-                hasLike = Boolean.TRUE;
-            }
-        }
-
-        Optional<Cafe> cafe = cafeRepository.findById(cafeId);
-        CommonValidator.notNullOrThrow(cafe, ErrorCode.NOT_FOUND_CAFE.getErrorMessage());
-        List<Review> reviews = reviewRepository.findAllByCafe(cafe.get());
-        
-        return new CafeDetailResponse(cafe.get(), reviews, hasLike);
+        CommonValidator.notNullOrThrow(token, ErrorCode.EMPTY_TOKEN.getErrorMessage());
+        Long userId = jwtTokenProvider.getUserId(token);
+        return cafeQueryRepository.getCafeDetail(cafeId, userId);
     }
 
     public List<CafePreviewResponse> getRecommendCafes(String token) {
-        CommonValidator.notNullOrThrow(token, ErrorCode.INVALID_TOKEN.getErrorMessage());
+        CommonValidator.notNullOrThrow(token, ErrorCode.EMPTY_TOKEN.getErrorMessage());
         Long userId = jwtTokenProvider.getUserId(token);
         Optional<User> findUser = userRepository.findById(userId);
         CommonValidator.notNullOrThrow(findUser, ErrorCode.NOT_FOUND_USER.getErrorMessage());
