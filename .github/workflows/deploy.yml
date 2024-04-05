@@ -6,7 +6,7 @@ on:
       - develop
 
 jobs:
-  push_to_registry:
+  build:
     name: Push to NCP container registry
     runs-on: ubuntu-latest
 
