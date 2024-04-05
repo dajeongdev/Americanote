@@ -80,4 +80,3 @@ jobs:
             docker rm $(docker ps -a -q)
             docker run -d -p 8009:80 ${{ secrets.NCP_CONTAINER_REGISTRY }}/tag-name
             docker image prune -f
-            ps -ef | grep
