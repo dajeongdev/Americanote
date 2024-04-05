@@ -42,4 +42,4 @@ jobs:
 
       # Jar 파일 실행
       - name: Execute Jar File
-        run: sudo kill -9 `sudo lsof -t -i:8009` & sudo java -jar /actions-runner/_work/Americanote/build/libs/americano-0.0.1-SNAPSHOT.jar &
+        run: sudo kill -9 `sudo lsof -t -i:8009` & sudo java -jar /actions-runner/_work/Americanote/Americanote/build/libs/americano-0.0.1-SNAPSHOT.jar &
