@@ -44,8 +44,8 @@ jobs:
       - name: Set up Docker build and push
         run: |
           docker login -u ${{ secrets.NCP_ACCESS_KEY }} -p ${{ secrets.NCP_SECRET_KEY }}
-          docker build -t ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote
-          docker push -t ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote
+          docker build -t ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote .
+          docker push ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote
           
 
   deploy:
