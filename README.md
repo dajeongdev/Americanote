@@ -10,7 +10,7 @@
 <br/>
 🖥️&nbsp;&nbsp;[서비스 이용해보러 가기](https://americanote.vercel.app) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <img src="https://github.com/dajeongdev/Americanote/assets/61612976/89d0ce20-287b-450a-a54a-2cfec5efb661" width="16px">&nbsp;&nbsp;
-[노션 구경하러 가기](https://americanote-403.notion.site/Americanote-c68b3be7dca540969478e2c03517c78e?pvs=4)
+[노션 구경하러 가기](https://night-geography-507.notion.site/Americanote-c95e62599ec348c48893a668d5dcfb5c?pvs=4)
 <br/>
 <br/>
 <br/>
