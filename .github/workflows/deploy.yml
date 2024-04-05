@@ -1,0 +1,72 @@
+name: Auto Deploy
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  push_to_registry:
+    name: Push to NCP container registry
+    runs-on: ubuntu-latest
+
+    steps:
+      # checkout
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # JDK setting
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+
+      # secret yml file 생성
+      - name: Set secret yml
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.DATABASE_YML }}" | base64 --decode > src/main/resources/application-database.yml
+          echo "${{ secrets.NAVER_TOKEN_YML }}" | base64 --decode > src/main/resources/application-naver-token.yml
+          echo "${{ secrets.SECURITY_YML }}" | base64 --decode > src/main/resources/application-security.yml
+          find src
+        shell: bash
+
+      # Gradle 권한 부여
+      - name: Grant permission for gradlew
+        run: chmod +x ./gradlew
+
+      # 테스트 없이 빌드
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
+
+      # 빌드한 jar를 도커 이미지로 빌드하고 도커 허브에 푸시
+      - name: Set up Docker build and push
+        run: |
+          docker login -u ${{ secrets.NCP_ACCESS_KEY }} -p ${{ secrets.NCP_SECRET_KEY }}
+          docker build -t ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote
+          docker push -t ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote
+          
+
+  deploy:
+    # needs를 통해 build job이 수행 성공시에 작업되도록 설정
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      # NCP 로그인 / docker image pull & run
+      - name: NCP login and docker image pull and run
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.NCP_HOST }}
+          username: ${{ secrets.NCP_USERNAME }}
+          password: ${{ secrets.NCP_PASSWORD }}
+          port: ${{ secrets.NCP_PORT }}
+          script: |
+            sudo docker login -u ${{ secrets.NCP_ACCESS_KEY }} -p ${{ secrets.NCP_SECRET_KEY }}
+            sudo docker stop $(sudo docker ps -a -q)
+            sudo docker rm -f $(sudo docker ps -a -q)
+            sudo docker pull ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote
+            sudo docker run -d -p 8009:8009 ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote
+            sudo docker image prune -f
+            ps -ef | grep
