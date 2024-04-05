@@ -56,8 +56,8 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote:0.0.1
-          cache-from: type=registry,ref=${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote:0.0.1
+          tags: ${{ secrets.NCP_CONTAINER_REGISTRY }}/tag-name:latest
+          cache-from: type=registry,ref=${{ secrets.NCP_CONTAINER_REGISTRY }}/tag-name:latest
           cache-to: type=inline
           
 
@@ -75,8 +75,8 @@ jobs:
           password: ${{ secrets.NCP_PASSWORD }}
           port: ${{ secrets.NCP_PORT }}
           script: |
-            docker pull ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote
+            docker pull ${{ secrets.NCP_CONTAINER_REGISTRY }}/tag-name
             docker stop $(docker ps -a -q)
             docker rm $(docker ps -a -q)
-            docker run -d -p 8009:80 ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote
+            docker run -d -p 8009:80 --name americanote_docker ${{ secrets.NCP_CONTAINER_REGISTRY }}/tag-name
             docker image prune -f
