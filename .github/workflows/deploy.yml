@@ -78,5 +78,5 @@ jobs:
             docker pull ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote
             docker stop $(docker ps -a -q)
             docker rm $(docker ps -a -q)
-            docker run -d -p 8009:8009 ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote
+            docker run -d -p 8009:80 ${{ secrets.NCP_CONTAINER_REGISTRY }}/americanote
             docker image prune -f
