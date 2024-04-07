@@ -66,13 +66,15 @@ public class CafeService {
     public List<CafePreviewResponse> getRecommendCafes(String token) {
         CommonValidator.notNullOrThrow(token, ErrorCode.EMPTY_TOKEN.getErrorMessage());
         Long userId = jwtTokenProvider.getUserId(token);
+        // query 1
         Optional<User> findUser = userRepository.findById(userId);
         CommonValidator.notNullOrThrow(findUser, ErrorCode.NOT_FOUND_USER.getErrorMessage());
         User user = findUser.get();
 
+        // query 3
         List<UserFlavour> userFlavours = user.getFlavours();
 
-        // 모든 커피 정보 가져오기
+        // 모든 커피 정보 가져오기 query 2
         List<Coffee> allCoffeeData = coffeeRepository.findAllWithFlavoursAndCafe();
 
         // 각 커피에 대한 우선순위 부여
@@ -139,10 +141,12 @@ public class CafeService {
         List<Cafe> cafes = topCoffees.stream().map(Coffee::getCafe).toList();
 
         // 카페와 리뷰를 한 번에 가져오기
+        // query 4
         List<Review> reviews = reviewRepository.findAllByCafeIn(cafes);
 
         // 사용자의 카페 좋아요 목록을 가져오기
         List<Long> cafeIds = topCoffees.stream().map(coffee -> coffee.getCafe().getId()).toList();
+        // query 5
         List<Like> likes = likeRepository.findByUserIdAndCafeIdIn(user.getId(), cafeIds);
 
         Map<Long, Boolean> likeMap = cafeIds.stream()
@@ -151,12 +155,13 @@ public class CafeService {
                         cafeId -> likes.stream().anyMatch(like -> Objects.equals(like.getCafeId(), cafeId))
                 ));
 
+        int coffeeIndex = 0;
         for (Cafe cafe : cafes) {
             boolean hasLike = likeMap.getOrDefault(cafe.getId(), false);
             List<Review> cafeReviews = reviews.stream()
                     .filter(review -> review.getCafe().equals(cafe))
                     .toList();
-            result.add(new CafePreviewResponse(cafe, cafeReviews, hasLike));
+            result.add(new CafePreviewResponse(cafe, topCoffees.get(coffeeIndex++), cafeReviews, hasLike));
         }
         return result;
     }
