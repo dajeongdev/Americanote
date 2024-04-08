@@ -1,10 +1,12 @@
 package com.coffee.americanote.cafe.repository.querydsl;
 
+import com.coffee.americanote.cafe.domain.CafeWithHasLike;
 import com.coffee.americanote.cafe.domain.entity.QCafe;
 import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
 import com.coffee.americanote.cafe.domain.response.CafeDetailResponse;
 import com.coffee.americanote.cafe.domain.response.CafeResponse;
 import com.coffee.americanote.cafe.domain.response.CafeSearchResponse;
+import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.domain.entity.QCoffee;
 import com.coffee.americanote.coffee.domain.entity.QCoffeeFlavour;
 import com.coffee.americanote.common.entity.Degree;
@@ -14,6 +16,7 @@ import com.coffee.americanote.like.domain.QLike;
 import com.coffee.americanote.review.domain.entity.QReview;
 import com.coffee.americanote.review.domain.response.ReviewResponse;
 import com.coffee.americanote.user.domain.entity.QUser;
+import com.coffee.americanote.user.domain.entity.User;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -129,6 +132,20 @@ public class CafeQueryRepositoryImpl implements CafeQueryRepository {
                 cafeDetailResponse.longitude(),
                 cafeDetailResponse.imageUrl(), cafeDetailResponse.cafeName(), cafeDetailResponse.avgStar(),
                 cafeDetailResponse.coffeeDetail(), reviewResponses, cafeDetailResponse.hasLike());
+    }
+
+    @Override
+    public List<CafeWithHasLike> findCafesWithLike(List<Coffee> coffees, User user) {
+        List<Long> cafeIds = coffees.stream().map(coffee -> coffee.getCafe().getId()).toList();
+        return queryFactory.select(Projections.constructor(CafeWithHasLike.class,
+                        cafe,
+                        JPAExpressions.selectFrom(like)
+                                .where(like.userId.eq(user.getId()).and(like.cafeId.eq(cafe.id)))
+                                .exists().as("hasLike")
+                ))
+                .from(cafe)
+                .where(cafe.id.in(cafeIds))
+                .stream().toList();
     }
 
     private BooleanExpression inFlavour(List<String> flavours) {
