@@ -1,11 +1,13 @@
-# ☕️ Americanote ☕️
+# ☕️ Americanote ☕️ &nbsp;&nbsp; ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/dajeongdev/Americanote/deploy.yml?branch=develop)
 ![중간산출물_Americanote](https://github.com/dajeongdev/Americanote/assets/61612976/6956afbf-def5-4fc8-af36-4e9689304868)
+
+(➕ 비사이드 온라인 해커톤 포텐데이 403에 참가하여 19팀 중 무려 **2등**🥈을 달성했습니다! 팀원분들께 정말 감사합니다!)
+
 ## 📃 서비스 소개 📃
 "카페 리뷰는 많은데 정작 커피 맛은 어떤지 모르겠어💦" <br>
 "꼭 방문해서 먹어보고 커피 맛을 알아야 할까?" <br>
 "내 취향에 딱 맞는 아메리카노를 먹고싶어!" <br>
-그래서 만들었습니다! Americanote는 카페를 방문하지 않고도 커피의 향, 강도, 산미를 알 수 있어요!<br><br>
-(➕ 비사이드 온라인 해커톤 포텐데이 403에 참가하여 19팀 중 무려 **2등**🥈을 달성했습니다! 팀원분들께 정말 감사합니다!)
+그래서 만들었습니다! Americanote는 카페를 방문하지 않고도 커피의 향, 강도, 산미를 알 수 있어요!
 <br/>
 <br/>
 🖥️&nbsp;&nbsp;[서비스 이용해보러 가기](https://americanote.vercel.app) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -17,11 +19,10 @@
 
 
 ## 😽 핵심 기능 😽
-- 나의 커피 취향을 등록할 수 있어요.
+- 나의 커피 취향을 저장할 수 있어요.
 - 카페를 가기 전, 커피의 맛을 확인할 수 있어요.
 - 지도에서 원하는 가격, 향, 강도, 산미 등을 필터링하여 볼 수 있어요.
 - 나의 커피 취향에 맞는 카페들을 추천받을 수 있어요.
-- 다양한 테마의 카페들도 추천해 드릴게요.
 <br/>
 <br/>
  
