@@ -1,5 +1,6 @@
 package com.coffee.americanote.cafe.service;
 
+import com.coffee.americanote.cafe.domain.CafeWithHasLike;
 import com.coffee.americanote.cafe.domain.entity.Cafe;
 import com.coffee.americanote.cafe.domain.entity.RecentSearch;
 import com.coffee.americanote.cafe.domain.request.SearchCafeRequest;
@@ -14,8 +15,6 @@ import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.repository.CoffeeRepository;
 import com.coffee.americanote.common.entity.ErrorCode;
 import com.coffee.americanote.common.validator.CommonValidator;
-import com.coffee.americanote.like.domain.Like;
-import com.coffee.americanote.like.repository.LikeRepository;
 import com.coffee.americanote.review.domain.entity.Review;
 import com.coffee.americanote.review.repository.ReviewRepository;
 import com.coffee.americanote.security.jwt.util.JwtTokenProvider;
@@ -29,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -40,7 +38,6 @@ public class CafeService {
     private final CoffeeRepository coffeeRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
-    private final LikeRepository likeRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final CafeQueryRepository cafeQueryRepository;
     private final RecentSearchRepository recentSearchRepository;
@@ -58,35 +55,22 @@ public class CafeService {
     }
 
     public CafeDetailResponse getCafeDetail(Long cafeId, String token) {
-        Boolean hasLike = Boolean.FALSE;
-        if (token != null) {
-            Long userId = jwtTokenProvider.getUserId(token);
-            Optional<User> findUser = userRepository.findById(userId);
-            CommonValidator.notNullOrThrow(findUser, ErrorCode.NOT_FOUND_USER.getErrorMessage());
-            User user = findUser.get();
-
-            if (likeRepository.existsByUserIdAndCafeId(user.getId(), cafeId)) {
-                hasLike = Boolean.TRUE;
-            }
-        }
-
-        Optional<Cafe> cafe = cafeRepository.findById(cafeId);
-        CommonValidator.notNullOrThrow(cafe, ErrorCode.NOT_FOUND_CAFE.getErrorMessage());
-        List<Review> reviews = reviewRepository.findAllByCafe(cafe.get());
-        
-        return new CafeDetailResponse(cafe.get(), reviews, hasLike);
+        CommonValidator.notNullOrThrow(token, ErrorCode.EMPTY_TOKEN.getErrorMessage());
+        Long userId = jwtTokenProvider.getUserId(token);
+        return cafeQueryRepository.getCafeDetail(cafeId, userId);
     }
 
     public List<CafePreviewResponse> getRecommendCafes(String token) {
-        CommonValidator.notNullOrThrow(token, ErrorCode.INVALID_TOKEN.getErrorMessage());
+        CommonValidator.notNullOrThrow(token, ErrorCode.EMPTY_TOKEN.getErrorMessage());
         Long userId = jwtTokenProvider.getUserId(token);
-        Optional<User> findUser = userRepository.findById(userId);
+        // query 1
+        Optional<User> findUser = userRepository.findByIdWithFlavours(userId);
         CommonValidator.notNullOrThrow(findUser, ErrorCode.NOT_FOUND_USER.getErrorMessage());
         User user = findUser.get();
 
         List<UserFlavour> userFlavours = user.getFlavours();
 
-        // 모든 커피 정보 가져오기
+        // 모든 커피 정보 가져오기 query 2
         List<Coffee> allCoffeeData = coffeeRepository.findAllWithFlavoursAndCafe();
 
         // 각 커피에 대한 우선순위 부여
@@ -96,7 +80,7 @@ public class CafeService {
         List<Coffee> topCoffees = selectTopPriorityCoffees(priorityMap, 5);
 
         // response로 변환 후 반환
-        return createRecCafeResponseList(topCoffees, user);
+        return createRecommendCafeResponseList(topCoffees, user);
     }
 
     private HashMap<Coffee, Double> calculatePriorities(User user, List<UserFlavour> userFlavours,
@@ -147,30 +131,21 @@ public class CafeService {
                 .toList();
     }
 
-    private List<CafePreviewResponse> createRecCafeResponseList(List<Coffee> topCoffees, User user) {
+    private List<CafePreviewResponse> createRecommendCafeResponseList(List<Coffee> topCoffees, User user) {
         List<CafePreviewResponse> result = new ArrayList<>();
 
         List<Cafe> cafes = topCoffees.stream().map(Coffee::getCafe).toList();
-
-        // 카페와 리뷰를 한 번에 가져오기
+        // query 3
+        List<CafeWithHasLike> cafeWithLike = cafeQueryRepository.findCafesWithLike(topCoffees, user);
+        // query 4
         List<Review> reviews = reviewRepository.findAllByCafeIn(cafes);
 
-        // 사용자의 카페 좋아요 목록을 가져오기
-        List<Long> cafeIds = topCoffees.stream().map(coffee -> coffee.getCafe().getId()).toList();
-        List<Like> likes = likeRepository.findByUserIdAndCafeIdIn(user.getId(), cafeIds);
-
-        Map<Long, Boolean> likeMap = cafeIds.stream()
-                .collect(Collectors.toMap(
-                        cafeId -> cafeId,
-                        cafeId -> likes.stream().anyMatch(like -> Objects.equals(like.getCafeId(), cafeId))
-                ));
-
-        for (Cafe cafe : cafes) {
-            boolean hasLike = likeMap.getOrDefault(cafe.getId(), false);
+        int coffeeIndex = 0;
+        for (CafeWithHasLike cafe : cafeWithLike) {
             List<Review> cafeReviews = reviews.stream()
-                    .filter(review -> review.getCafe().equals(cafe))
+                    .filter(review -> review.getCafe().equals(cafe.getCafe()))
                     .toList();
-            result.add(new CafePreviewResponse(cafe, cafeReviews, hasLike));
+            result.add(new CafePreviewResponse(cafe.getCafe(), topCoffees.get(coffeeIndex++), cafeReviews, cafe.getHasLike()));
         }
         return result;
     }
