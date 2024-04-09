@@ -63,62 +63,53 @@ public class CafeService {
     public List<CafePreviewResponse> getRecommendCafes(String token) {
         CommonValidator.notNullOrThrow(token, ErrorCode.EMPTY_TOKEN.getErrorMessage());
         Long userId = jwtTokenProvider.getUserId(token);
-        // query 1
         Optional<User> findUser = userRepository.findByIdWithFlavours(userId);
         CommonValidator.notNullOrThrow(findUser, ErrorCode.NOT_FOUND_USER.getErrorMessage());
         User user = findUser.get();
 
         List<UserFlavour> userFlavours = user.getFlavours();
 
-        // 모든 커피 정보 가져오기 query 2
+        // 모든 커피 정보 가져오기
         List<Coffee> allCoffeeData = coffeeRepository.findAllWithFlavoursAndCafe();
 
         // 각 커피에 대한 우선순위 부여
         HashMap<Coffee, Double> priorityMap = calculatePriorities(user, userFlavours, allCoffeeData);
 
         // 5명 뽑기
-        List<Coffee> topCoffees = selectTopPriorityCoffees(priorityMap, 5);
+        List<Coffee> topCoffees = selectTopPriorityCoffees(priorityMap);
 
         // response로 변환 후 반환
         return createRecommendCafeResponseList(topCoffees, user);
     }
 
     private HashMap<Coffee, Double> calculatePriorities(User user, List<UserFlavour> userFlavours,
-                                                                 List<Coffee> allCoffeeData) {
-        // 커피들의 우선순위를 저장하는 map
+                                                        List<Coffee> allCoffeeData) {
         HashMap<Coffee, Double> priorityMap = new HashMap<>();
         allCoffeeData.forEach(coffee -> {
-            double priority = 0;
-            // 여기서 향, 산미, 강도 일치하는지 확인하여 우선순위 계산
-            priority += calculatePriorityForMatchingAttributes(coffee, user, userFlavours);
-            priorityMap.put(coffee, priority);
+            priorityMap.put(coffee, calculatePriorityForMatchingAttributes(coffee, user, userFlavours));
         });
         return priorityMap;
     }
 
     private double calculatePriorityForMatchingAttributes(Coffee coffee, User user,
                                                            List<UserFlavour> userFlavours) {
-        double priority = 0;
         // 향 일치 개수
-        int matchingFlavours = (int) coffee.getFlavours().stream()
+        double priority = coffee.getFlavours().stream()
                 .flatMap(flavour -> userFlavours.stream()
                         .map(UserFlavour::getFlavour)
                         .filter(userFlavour -> userFlavour.equals(flavour.getFlavour())))
-                .count();
-        priority += matchingFlavours;
+                        .count();
         // 강도 일치하면 +1 / 1단계 차이나면 +0.5 / 2단계 차이나면 +0
-        priority += user.getIntensity() != null ? 1 - Math.abs(
-                coffee.getIntensity().getWeight()
-                        - user.getIntensity().getWeight()) : 0;
+        priority += user.getIntensity() != null ? 1 -
+                Math.abs(coffee.getIntensity().getWeight() - user.getIntensity().getWeight()) : 0;
         // 산미 일치하면 +1 / 1단계 차이나면 +0.5 / 2단계 차이나면 +0
-        priority += user.getAcidity() != null ? 1 - Math.abs(
-                coffee.getAcidity().getWeight()
-                        - user.getAcidity().getWeight()) : 0;
+        priority += user.getAcidity() != null ? 1 -
+                Math.abs(coffee.getAcidity().getWeight() - user.getAcidity().getWeight()) : 0;
 
         return priority;
     }
 
-    private List<Coffee> selectTopPriorityCoffees(Map<Coffee, Double> priorityMap, long limitSize) {
+    private List<Coffee> selectTopPriorityCoffees(Map<Coffee, Double> priorityMap) {
         Comparator<Map.Entry<Coffee, Double>> randomComparator =
                 Entry.<Coffee, Double>comparingByValue()
                 .thenComparing(entry -> Math.random());
@@ -126,7 +117,7 @@ public class CafeService {
         return priorityMap.entrySet()
                 .stream()
                 .sorted(randomComparator.reversed())
-                .limit(limitSize)
+                .limit(5)
                 .map(Map.Entry::getKey)
                 .toList();
     }
@@ -135,9 +126,7 @@ public class CafeService {
         List<CafePreviewResponse> result = new ArrayList<>();
 
         List<Cafe> cafes = topCoffees.stream().map(Coffee::getCafe).toList();
-        // query 3
         List<CafeWithHasLike> cafeWithLike = cafeQueryRepository.findCafesWithLike(topCoffees, user);
-        // query 4
         List<Review> reviews = reviewRepository.findAllByCafeIn(cafes);
 
         int coffeeIndex = 0;
@@ -153,21 +142,21 @@ public class CafeService {
     @Transactional
     public List<CafeSearchResponse> getAllSearchCafe(String keyword, String accessToken) {
         Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
-        // 토큰 있을 때 최근 검색어 등록
-        // 최근 검색어에 이미 keyword가 있으면 등록X
-        // keyword가 ""(empty)면 등록X
-        if (userId != 0 && !recentSearchRepository.existsByUserIdAndSearchWord(userId, keyword) &&
-                !keyword.isEmpty() && !keyword.equals("undefined")) {
-            // 최근 검색어 5개일 경우 -> 제일 오래된 검색어 삭제 -> 새로운 검색어 저장
-            if (recentSearchRepository.countByUserId(userId) == 5) {
-                List<RecentSearch> allByUserId = recentSearchRepository
-                        .findAllByUserIdOrderByCreatedDateAsc(userId);
-                recentSearchRepository.delete(allByUserId.get(0));
-            }
-            // 최근 검색어 5개 미만일 경우 -> 새로운 검색어 저장
-            recentSearchRepository.save(RecentSearch.toEntity(userId, keyword));
+        if (userId != 0) {
+            saveSearchKeyword(keyword, userId);
         }
         return cafeQueryRepository.getAllSearchCafe(keyword, userId);
+    }
+
+    private void saveSearchKeyword(String keyword, Long userId) {
+        if (!recentSearchRepository.existsByUserIdAndSearchWord(userId, keyword) &&
+                !keyword.isBlank() && !keyword.equals("undefined")) {
+            if (recentSearchRepository.countByUserId(userId) == 5) {
+                List<RecentSearch> allByUserId = recentSearchRepository.findAllByUserIdOrderByCreatedDateAsc(userId);
+                recentSearchRepository.delete(allByUserId.get(0));
+            }
+            recentSearchRepository.save(RecentSearch.toEntity(userId, keyword));
+        }
     }
 
     public List<String> getAllRecentSearchWord(String accessToken) {
