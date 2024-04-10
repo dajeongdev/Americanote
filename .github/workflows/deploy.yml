@@ -42,8 +42,8 @@ jobs:
 
       # 빌드 폴더에 접근
       - name: Enter build file
-        run: cd build/libs
+        run: cd build/libs && ll
 
       # Jar 파일 실행
       - name: Execute Jar File
-        run: sudo kill -9 `sudo lsof -t -i:8009` & sudo nohup java -jar americano-0.0.1-SNAPSHOT.jar &
+        run: sudo kill -9 `sudo lsof -t -i:8009` && sudo nohup java -jar americano-0.0.1-SNAPSHOT.jar &
