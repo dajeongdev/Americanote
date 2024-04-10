@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  app:
+    image: americanote_docker
+    container_name: app
+    expose:
+      - 8009
+    ports:
+      - 8009:8009
+
+  nginx:
+    image: americanote_nginx
+    container_name: nginx
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - app
