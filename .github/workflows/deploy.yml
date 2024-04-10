@@ -40,10 +40,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 
-      # 빌드 폴더에 접근
-      - name: Enter build file
-        run: cd build/libs && ll
+      # 포트가 사용 중이라면 종료
+      - name: Kill 80 port if exist
+        run: |
+            if sudo lsof -i :8009; then
+              echo "Port 8009 is already in use. Killing the process..."
+              sudo kill -9 `sudo lsof -t -i:8009`
+            fi
 
       # Jar 파일 실행
       - name: Execute Jar File
-        run: sudo kill -9 `sudo lsof -t -i:8009` && sudo nohup java -jar americano-0.0.1-SNAPSHOT.jar &
+        run: sudo java -jar build/libs/americano-0.0.1-SNAPSHOT.jar &
