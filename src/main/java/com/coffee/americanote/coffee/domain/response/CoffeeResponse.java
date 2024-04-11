@@ -2,6 +2,7 @@ package com.coffee.americanote.coffee.domain.response;
 
 import com.coffee.americanote.coffee.domain.entity.Coffee;
 import com.coffee.americanote.coffee.domain.entity.CoffeeFlavour;
+import com.coffee.americanote.common.entity.Degree;
 import java.util.List;
 
 public record CoffeeResponse(
@@ -20,6 +21,18 @@ public record CoffeeResponse(
                 coffee.getIntensity().getLabel(),
                 coffee.getAcidity().getLabel(),
                 coffee.getPrice()
+        );
+    }
+
+    public CoffeeResponse(Long cafeId, String coffeeName, List<String> flavours, Degree intensity, Degree acidity,
+                          Integer price) {
+        this(
+                cafeId,
+                coffeeName,
+                flavours,
+                intensity.getLabel(),
+                acidity.getLabel(),
+                price
         );
     }
 }

@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -47,35 +46,38 @@ public class MyPageService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
 
-        List<UserFlavour> existingUserFlavours = userFlavourRepository.findAllByUser(user);
-
-        List<Flavour> preferFlavours = userPreferRequest.flavours()
+        List<UserFlavour> originalUserFlavours = userFlavourRepository.findAllByUser(user);
+        List<Flavour> requestUserFlavours = userPreferRequest.flavours()
                 .stream().map(Flavour::valueOfLabel).toList();
 
-        Map<Flavour, UserFlavour> existingFlavourMap = Optional.ofNullable(existingUserFlavours)
-                .map(flavours -> flavours.stream()
-                        .collect(Collectors.toMap(UserFlavour::getFlavour, f -> f)))
-                .orElse(Collections.emptyMap());
+        List<UserFlavour> newUserFlavours = getNewUserFlavoursList(user, originalUserFlavours, requestUserFlavours);
+        userFlavourRepository.saveAll(newUserFlavours);
+        userFlavourRepository.deleteAll(originalUserFlavours);
 
-        // 새로운 향들 처리
-        for (Flavour prefer : preferFlavours) {
-            if (existingFlavourMap.containsKey(prefer)) {
-                // 이미 존재하는 경우
-                // 삭제할 후보에서 제거
-                existingFlavourMap.remove(prefer);
-            } else {
-                // 존재하지 않는 경우
-                UserFlavour newFlavour = UserFlavour.builder().user(user).flavour(prefer).build();
-                userFlavourRepository.save(newFlavour);
-            }
-        }
-
-        // 삭제할 후보로 남은 향들 삭제
-        userFlavourRepository.deleteAll(existingFlavourMap.values());
-
-        // 강도, 산미 update
         user.updateAcidity(userPreferRequest.acidity() != null ? Degree.valueOfLabel(userPreferRequest.acidity()) : null);
         user.updateIntensity(userPreferRequest.intensity() != null ? Degree.valueOfLabel(userPreferRequest.intensity()) : null);
+    }
+
+    private static List<UserFlavour> getNewUserFlavoursList(User user, List<UserFlavour> originalUserFlavours,
+                                                               List<Flavour> requestUserFlavours) {
+        List<UserFlavour> newUserFlavours = new ArrayList<>();
+        for (Flavour prefer : requestUserFlavours) {
+            boolean found = false;
+            for (UserFlavour originalFlavour : originalUserFlavours) {
+                if (originalFlavour.getFlavour().equals(prefer)) {
+                    originalUserFlavours.remove(originalFlavour);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                newUserFlavours.add(UserFlavour.builder()
+                        .user(user)
+                        .flavour(prefer)
+                        .build());
+            }
+        }
+        return newUserFlavours;
     }
 
     public List<CafeSearchResponse> getAllUserLikeCafe(String accessToken) {
