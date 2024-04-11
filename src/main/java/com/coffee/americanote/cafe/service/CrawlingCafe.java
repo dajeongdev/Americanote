@@ -37,6 +37,8 @@ public class CrawlingCafe {
     private final CoffeeFlavourRepository flavourRepository;
 
     private WebDriver driver;
+    private JavascriptExecutor js = null;
+    private static final Random random = new Random();
     private static final String LOCATION = "연남동";
     private static final String KEYWORD = "카페";
     private static final String URL = "https://map.naver.com/v5/";
@@ -55,8 +57,9 @@ public class CrawlingCafe {
 
         // 브라우저 선택
         driver = new ChromeDriver(options);
+        js = (JavascriptExecutor) driver;
 
-        getDataList();
+        crawlingData();
 
         // 탭 닫기
         driver.close();
@@ -65,7 +68,7 @@ public class CrawlingCafe {
     }
 
     // 데이터 가져오기
-    private void getDataList() throws InterruptedException {
+    private void crawlingData() throws InterruptedException {
         // 브라우저에서 url로 이동한다.
         driver.get(URL);
         // 브라우저에서 로딩될 때까지 잠시 기다린다.
@@ -89,128 +92,13 @@ public class CrawlingCafe {
             // 원하는 요소를 찾기
             WebElement scrollBox = driver.findElement(By.id("_pcmap_list_scroll_container"));
 
-            // 한 페이지 전부 스크롤
-            while (true) {
-                long lastHeight = (long) ((JavascriptExecutor) driver).executeScript(
-                        "return arguments[0].scrollHeight;", scrollBox);
-                // 스크롤을 가장 아래로 내림
-                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollTo(0, arguments[0].scrollHeight);",
-                        scrollBox);
-                Thread.sleep(2000);
-                long newHeight = (long) ((JavascriptExecutor) driver).executeScript("return arguments[0].scrollHeight;",
-                        scrollBox);
-                // 스크롤이 더이상 내려가지 않을 때 반복문 종료
-                if (newHeight == lastHeight) {
-                    break;
-                }
-            }
+            // 한 페이지 내의 카페 모두 hashMap에 put
+            List<WebElement> elements = getCafeListElements(scrollBox);
 
-            // 사이트에서 전체 매장을 찾은 뒤 코드를 읽는다.
-            List<WebElement> elements = driver.findElements(By.xpath("//*[@id='_pcmap_list_scroll_container']//li"));
+            getCafesDataAndSave(elements);
 
-            for (WebElement e : elements) {
-                WebElement finalElement = e.findElement(By.xpath(".//a/div/div/span"));
-                // 매장명을 키값으로 해시맵 생성
-                coffeeInfoms.put(finalElement.getText(), new ArrayList<>());
-            }
-
-            // 매장을 하나씩 클릭하고 주소를 읽는다.
-            for (WebElement e : elements) {
-                // 약간 스크롤
-                JavascriptExecutor js = (JavascriptExecutor) driver;
-                js.executeScript("arguments[0].scrollIntoView(true);", e);
-
-                //e.click(); // 이거클릭하니까 사진 탭으로 가버림
-                // 가게 이름 클릭
-                e.findElement(By.xpath(".//a/div/div/span")).click();
-                String key = e.findElement(By.xpath(".//a/div/div/span")).getText();
-
-
-                Thread.sleep(2000);
-                driver.switchTo().parentFrame(); // 부모 프레임으로 이동
-                driver.switchTo().frame(driver.findElement(By.id("entryIframe"))); // 옆 iframe으로 이동
-                Thread.sleep(2000);
-
-                // 주소 가져오기
-                js.executeScript("window.scrollBy(0, 200);"); // 세로로 50px 만큼 스크롤
-                String address = driver.findElement(By.cssSelector("span.LDgIH")).getText();
-                Thread.sleep(2000);
-
-                try {
-                    // 텍스트를 포함하는 요소를 찾기 위한 XPath
-                    driver.findElement(By.xpath("//div[@class='flicking-camera']//*[contains(text(), '메뉴')]")).click();
-                } catch (Exception ex) {
-                    try {
-                        // 바에서 보통 3번째가 '메뉴'
-                        driver.findElement(By.xpath("//div[@class='flicking-camera']/*[3]")).click();
-                    } catch (Exception ex1) {
-                        // 메뉴 클릭 못하면 해시맵에서 삭제
-                        coffeeInfoms.remove(key);
-                        continue;
-                    }
-                }
-
-                Thread.sleep(2000);
-
-                // 메뉴 정보 가져오기
-                String[] menuInfo = getMenuInfo(driver);
-                // 5000~6000 이런건 처리 불가
-                menuInfo[1] = menuInfo[1].replaceAll("[^0-9]", "");
-
-                // 메뉴 가격이 있으면 저장
-                if (!menuInfo[1].equals("")) {
-                    // 주소 -> 좌표
-                    String[] coordinate = addressToCoordinate.addressToCoordinate(address);
-
-                    js.executeScript("window.scrollTo(0, 0)");
-                    WebElement profile = null;
-                    try {
-                        // 대표 사진
-                        profile = driver.findElement(By.cssSelector("div#ibu_1.K0PDV._div"));
-                    } catch (Exception exception) {
-                        // 대표 사진 위치에 동영상이 있다면 옆 사진
-                        profile = driver.findElement(By.cssSelector("div#ibu_2.K0PDV._div"));
-                    }
-                    String style = profile.getAttribute("style");
-                    String imageUrl = extractImageUrl(style); // 대표 사진
-
-                    // db에 카페 정보 저장
-                    Cafe cafeEntity = Cafe.builder()
-                            .name(key)
-                            .address(address)
-                            .latitude(Double.parseDouble(coordinate[0]))
-                            .longitude(Double.parseDouble(coordinate[1]))
-                            .imageUrl(imageUrl).build();
-                    Cafe savedCafe = cafeRepository.save(cafeEntity);
-                    // db에 커피 정보 저장
-                    Coffee coffeeEntity = Coffee.builder()
-                            .cafe(savedCafe)
-                            .name(menuInfo[0])
-                            .intensity(getRandomDegree())
-                            .acidity(getRandomDegree())
-                            .price(Integer.parseInt(menuInfo[1])).build();
-                    Coffee savedCoffee = coffeeRepository.save(coffeeEntity);
-                    // db에 커피 향 정보 저장
-                    List<Flavour> randomFlavours = getRandomFlavours();
-                    for (Flavour randomFlavour : randomFlavours) {
-                        CoffeeFlavour flavourEntity = CoffeeFlavour.builder()
-                                .coffee(savedCoffee)
-                                .flavour(randomFlavour).build();
-                        flavourRepository.save(flavourEntity);
-                    }
-
-                    coffeeInfoms.remove(key);
-                } else {
-                    // 메뉴 없으면 해시맵에서 삭제
-                    coffeeInfoms.remove(key);
-                }
-
-                driver.switchTo().parentFrame(); // 부모 프레임으로 이동
-                driver.switchTo().frame("searchIframe"); // 원래 iframe으로 이동
-            }
-
+            // 다음 페이지로 못가면 break;
             if (nextButton.getAttribute("aria-disabled").equals("true")) {
-                // 다음 페이지로 못가면 break;
                 break;
             }
 
@@ -220,7 +108,140 @@ public class CrawlingCafe {
         }
     }
 
-    public static String[] getMenuInfo(WebDriver driver) {
+    private void getCafesDataAndSave(List<WebElement> elements) throws InterruptedException {
+        // (한 페이지) 매장을 하나씩 클릭하고 정보를 읽는다.
+        for (WebElement e : elements) {
+            // 약간 스크롤
+            js.executeScript("arguments[0].scrollIntoView(true);", e);
+
+            //e.click(); // 이거클릭하니까 사진 탭으로 가버림
+            // 가게 이름 클릭
+            e.findElement(By.xpath(".//a/div/div/span")).click();
+            String key = e.findElement(By.xpath(".//a/div/div/span")).getText();
+
+
+            Thread.sleep(2000);
+            driver.switchTo().parentFrame(); // 부모 프레임으로 이동
+            driver.switchTo().frame(driver.findElement(By.id("entryIframe"))); // 옆 iframe으로 이동
+            Thread.sleep(2000);
+
+            // 주소 가져오기
+            js.executeScript("window.scrollBy(0, 200);"); // 세로로 50px 만큼 스크롤
+            String address = driver.findElement(By.cssSelector("span.LDgIH")).getText();
+            Thread.sleep(2000);
+
+            try {
+                // 텍스트를 포함하는 요소를 찾기 위한 XPath
+                driver.findElement(By.xpath("//div[@class='flicking-camera']//*[contains(text(), '메뉴')]")).click();
+            } catch (Exception ex) {
+                try {
+                    // 바에서 보통 3번째가 '메뉴'
+                    driver.findElement(By.xpath("//div[@class='flicking-camera']/*[3]")).click();
+                } catch (Exception ex1) {
+                    // 메뉴 클릭 못하면 해시맵에서 삭제
+                    coffeeInfoms.remove(key);
+                    continue;
+                }
+            }
+
+            Thread.sleep(2000);
+
+            // 메뉴 정보 가져오기
+            String[] menuInfo = getMenuInfo(driver);
+            // cafe, coffee, coffeeFlavour 저장
+            saveCafeAndCoffeeData(key, address, menuInfo);
+
+            driver.switchTo().parentFrame(); // 부모 프레임으로 이동
+            driver.switchTo().frame("searchIframe"); // 원래 iframe으로 이동
+        }
+    }
+
+    private void saveCafeAndCoffeeData(String key, String address, String[] menuInfo) {
+        // 5000~6000 이런건 처리 불가
+        menuInfo[1] = menuInfo[1].replaceAll("\\D", "");
+
+        // 메뉴 가격이 있으면 저장
+        if (!menuInfo[1].equals("")) {
+            // 주소 -> 좌표
+            String[] coordinate = addressToCoordinate.addressToCoordinate(address);
+
+            js.executeScript("window.scrollTo(0, 0)");
+            WebElement profile;
+            try {
+                // 대표 사진
+                profile = driver.findElement(By.cssSelector("div#ibu_1.K0PDV._div"));
+            } catch (Exception exception) {
+                // 대표 사진 위치에 동영상이 있다면 옆 사진
+                profile = driver.findElement(By.cssSelector("div#ibu_2.K0PDV._div"));
+            }
+            String style = profile.getAttribute("style");
+            String imageUrl = extractImageUrl(style); // 대표 사진
+
+            // db에 카페 정보 저장
+            Cafe savedCafe = cafeRepository.save(
+                    Cafe.builder()
+                    .name(key)
+                    .address(address)
+                    .latitude(Double.parseDouble(coordinate[0]))
+                    .longitude(Double.parseDouble(coordinate[1]))
+                    .imageUrl(imageUrl).build()
+            );
+            // db에 커피 정보 저장
+            Coffee savedCoffee = coffeeRepository.save(
+                    Coffee.builder()
+                    .cafe(savedCafe)
+                    .name(menuInfo[0])
+                    .intensity(getRandomDegree())
+                    .acidity(getRandomDegree())
+                    .price(Integer.parseInt(menuInfo[1])).build()
+            );
+            // db에 커피 향 정보 저장
+            List<Flavour> randomFlavours = getRandomFlavours();
+            for (Flavour randomFlavour : randomFlavours) {
+                flavourRepository.save(
+                        CoffeeFlavour.builder()
+                        .coffee(savedCoffee)
+                        .flavour(randomFlavour).build()
+                );
+            }
+        }
+        // 해시맵에서 삭제
+        coffeeInfoms.remove(key);
+    }
+
+    private List<WebElement> getCafeListElements(WebElement scrollBox) throws InterruptedException {
+        scrollCurrentPage(scrollBox);
+
+        // 사이트에서 해당 페이지의 전체 매장을 찾은 뒤 코드를 읽는다.
+        List<WebElement> elements = driver.findElements(By.xpath("//*[@id='_pcmap_list_scroll_container']//li"));
+
+        for (WebElement e : elements) {
+            WebElement finalElement = e.findElement(By.xpath(".//a/div/div/span"));
+            // 매장명을 키값으로 해시맵 생성
+            coffeeInfoms.put(finalElement.getText(), new ArrayList<>());
+        }
+        return elements;
+    }
+
+    private void scrollCurrentPage(WebElement scrollBox) throws InterruptedException {
+        // 한 페이지 전부 스크롤
+        while (true) {
+            long lastHeight = (long) ((JavascriptExecutor) driver).executeScript(
+                    "return arguments[0].scrollHeight;", scrollBox);
+            // 스크롤을 가장 아래로 내림
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollTo(0, arguments[0].scrollHeight);",
+                    scrollBox);
+            Thread.sleep(2000);
+            long newHeight = (long) ((JavascriptExecutor) driver).executeScript("return arguments[0].scrollHeight;",
+                    scrollBox);
+            // 스크롤이 더이상 내려가지 않을 때 반복문 종료
+            if (newHeight == lastHeight) {
+                break;
+            }
+        }
+    }
+
+    private static String[] getMenuInfo(WebDriver driver) {
         try {
             // 더보기 클릭
             WebElement moreSee = driver.findElement(By.className("fvwqf"));
@@ -228,15 +249,14 @@ public class CrawlingCafe {
             js.executeScript("arguments[0].scrollIntoView(true);", moreSee);
             moreSee.click();
         } catch (Exception ignored) {
-
+            // 더보기 클릭 못해도 계속 실행
         }
+        String[] menuInfo = {"", ""};
         try {
             // 메뉴 정보가 있는 요소를 찾아서 가져오기
             List<WebElement> menuElements = driver.findElements(By.xpath("//div[@class='yQlqY']/span[@class='lPzHi']"));
             // 변동 가격이랑 123~124 이런 가격도 나오도록
             List<WebElement> priceElements = driver.findElements(By.xpath("//div[@class='GXS1X']"));
-
-            String[] menuInfo = {"", ""};
 
             // 각 메뉴 요소에서 메뉴 이름과 가격을 가져오기
             for (int i = 0; i < menuElements.size(); i++) {
@@ -254,11 +274,11 @@ public class CrawlingCafe {
             return menuInfo;
         } catch (Exception e) {
             log.info(e.getMessage());
-            return new String[]{"", ""};
+            return menuInfo;
         }
     }
 
-    public static String extractImageUrl(String styleAttribute) {
+    private static String extractImageUrl(String styleAttribute) {
         Pattern pattern = Pattern.compile("url\\(\"(.*?)\"\\)");
         Matcher matcher = pattern.matcher(styleAttribute);
 
@@ -269,15 +289,13 @@ public class CrawlingCafe {
         }
     }
 
-    public static Degree getRandomDegree() {
+    private static Degree getRandomDegree() {
         Degree[] degrees = Degree.values();
-        Random random = new Random();
         int randomIndex = random.nextInt(degrees.length);
         return degrees[randomIndex];
     }
 
-    public static List<Flavour> getRandomFlavours() {
-        Random random = new Random();
+    private static List<Flavour> getRandomFlavours() {
         List<Flavour> allFlavours = List.of(Flavour.values());
         int chooseNum = random.nextInt(3) + 1;
 
