@@ -6,6 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -29,6 +32,10 @@ public class UserToken {
 
     @Column(name = "refresh_token")
     private String refreshToken;
+
+    @LastModifiedDate
+    @Column(name = "updated_date")
+    private LocalDateTime updatedDate;
 
     public void updateToken(String accessToken) {
         this.accessToken = accessToken;
