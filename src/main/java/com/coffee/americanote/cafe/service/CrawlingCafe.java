@@ -67,7 +67,6 @@ public class CrawlingCafe {
         driver.quit();
     }
 
-    // 데이터 가져오기
     private void crawlingData() throws InterruptedException {
         // 브라우저에서 url로 이동한다.
         driver.get(URL);
@@ -75,7 +74,6 @@ public class CrawlingCafe {
         Thread.sleep(2000);
 
         // 네이버 지도 검색창에 원하는 단어 입력 후 엔터
-        // 연남동카페 검색
         WebElement inputSearch = driver.findElement(By.className("input_search"));
         inputSearch.sendKeys(LOCATION + " " + KEYWORD);
         Thread.sleep(1500);
@@ -131,7 +129,7 @@ public class CrawlingCafe {
             Thread.sleep(2000);
 
             try {
-                // 텍스트를 포함하는 요소를 찾기 위한 XPath
+                // '메뉴'글자 포함한 거 누르기
                 driver.findElement(By.xpath("//div[@class='flicking-camera']//*[contains(text(), '메뉴')]")).click();
             } catch (Exception ex) {
                 try {
@@ -157,7 +155,15 @@ public class CrawlingCafe {
     }
 
     private void saveCafeAndCoffeeData(String key, String address, String[] menuInfo) {
-        // 5000~6000 이런건 처리 불가
+        // '5000~6000' 처리
+        String[] menuPrices = menuInfo[1].split("~");
+        if (menuPrices.length == 2) {
+            int price1 = Integer.parseInt(menuPrices[0]);
+            int price2 = Integer.parseInt(menuPrices[1]);
+            int averagePrice = (price1 + price2) / 2;
+            menuInfo[1] = String.valueOf(averagePrice);
+        }
+        // '변동' 가격 처리
         menuInfo[1] = menuInfo[1].replaceAll("\\D", "");
 
         // 메뉴 가격이 있으면 저장
