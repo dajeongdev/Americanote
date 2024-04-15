@@ -1,14 +1,12 @@
 package com.coffee.americanote.user.domain.entity;
 
+import com.coffee.americanote.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.LastModifiedDate;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -16,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Table(name = "user_token")
 @Entity
-public class UserToken {
+public class UserToken extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,10 +30,6 @@ public class UserToken {
 
     @Column(name = "refresh_token")
     private String refreshToken;
-
-    @LastModifiedDate
-    @Column(name = "updated_date")
-    private LocalDateTime updatedDate;
 
     public void updateToken(String accessToken) {
         this.accessToken = accessToken;
