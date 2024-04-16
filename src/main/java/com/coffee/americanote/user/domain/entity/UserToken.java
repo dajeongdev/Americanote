@@ -1,5 +1,6 @@
 package com.coffee.americanote.user.domain.entity;
 
+import com.coffee.americanote.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "user_token")
 @Entity
-public class UserToken {
+public class UserToken extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
