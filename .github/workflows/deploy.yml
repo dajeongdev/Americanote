@@ -51,5 +51,5 @@ jobs:
       # Jar 파일 실행
       - name: Execute Jar File
         run: |
-          nohup java -jar build/libs/americano-0.0.1-SNAPSHOT.jar 1>/root/nohup/output.log 2>/root/nohup/error.log &
+          sudo nohup java -jar build/libs/americano-0.0.1-SNAPSHOT.jar 1>/root/nohup/output.log 2>/root/nohup/error.log &
           sleep 10
