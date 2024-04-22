@@ -41,7 +41,7 @@ jobs:
         run: ./gradlew clean build -x test
 
       # 포트가 사용 중이라면 종료
-      - name: Kill 80 port if exist
+      - name: Kill 8009 port if exist
         run: |
             if sudo lsof -i :8009; then
               echo "Port 8009 is already in use. Killing the process..."
@@ -50,4 +50,6 @@ jobs:
 
       # Jar 파일 실행
       - name: Execute Jar File
-        run: nohup java -jar build/libs/americano-0.0.1-SNAPSHOT.jar 1>/root/nohup/output.log 2>error.log &
+        run: |
+          nohup java -jar build/libs/americano-0.0.1-SNAPSHOT.jar 1>/root/nohup/output.log 2>/root/nohup/error.log &
+          sleep 2
