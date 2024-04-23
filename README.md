@@ -3,7 +3,7 @@
 
 (➕ 비사이드 온라인 해커톤 포텐데이 403에 참가하여 19팀 중 무려 **2등**🥈을 달성했습니다! 팀원분들께 정말 감사합니다!)
 
-## 📃 서비스 소개 📃
+## 📃 서비스 소개 📃 (현재 부족한 부분을 리팩토링 중입니다!)
 "카페 리뷰는 많은데 정작 커피 맛은 어떤지 모르겠어💦" <br>
 "꼭 방문해서 먹어보고 커피 맛을 알아야 할까?" <br>
 "내 취향에 딱 맞는 아메리카노를 먹고싶어!" <br>
@@ -69,3 +69,171 @@
 
 ## 📙 API Docs 📙
 [Swagger 문서 확인하러 가기](https://www.americanote.store/swagger-ui/index.html)
+<br/>
+<br/>
+<br/>
+
+
+## ❗️ 리팩토링 (040124 ~ 현재)
+- [x]  리팩토링 항목 정리 (0401)
+- [x] [서버 구성 정리](https://night-geography-507.notion.site/e81154ce879a4ca5a80a925ef33e67e8?pvs=4)
+- [x]  validation & error 처리 -> 파트 나눠서 해보고 코드 리뷰 완료
+- [x]  CI/CD
+	- [x] Github Actions self-hosted runner를 사용한 배포 자동화 (0406, 0422)
+    - [ ]  Docker compose
+- [x]  토큰 서비스 개선 @박다정 (0410)
+- [x]  쿼리 최적화 -> N+1 문제 해결 (0403)
+- [x]  크롤링 코드 개선 @최다빈
+- [ ]  accessToken -> userId 컴포넌트화 @박다정
+- [ ]  클래스 접근제어자 수정
+- [ ]  코드 스타일 적용
+- [x]  readme 추가 (0402)
+- [ ]  프로젝트 이슈 탭에 트러블슈팅 정리
+<br/>
+<br/>
+
+
+## 폴더 구조
+```markdown
+├── AmericanoApplication.java
+├── cafe
+│   ├── config
+│   │   └── CafeSwaggerConfig.java
+│   ├── controller
+│   │   └── CafeController.java
+│   ├── domain
+│   │   ├── CafeWithHasLike.java
+│   │   ├── entity
+│   │   │   ├── Cafe.java
+│   │   │   └── RecentSearch.java
+│   │   ├── request
+│   │   │   └── SearchCafeRequest.java
+│   │   └── response
+│   │       ├── CafeDetailResponse.java
+│   │       ├── CafePreviewResponse.java
+│   │       ├── CafeResponse.java
+│   │       └── CafeSearchResponse.java
+│   ├── repository
+│   │   ├── CafeRepository.java
+│   │   ├── RecentSearchRepository.java
+│   │   └── querydsl
+│   │       ├── CafeQueryRepository.java
+│   │       └── CafeQueryRepositoryImpl.java
+│   └── service
+│       ├── AddressToCoordinate.java
+│       ├── CafeService.java
+│       └── CrawlingCafe.java
+├── coffee
+│   ├── controller
+│   │   └── CoffeeController.java
+│   ├── domain
+│   │   ├── entity
+│   │   │   ├── Coffee.java
+│   │   │   └── CoffeeFlavour.java
+│   │   └── response
+│   │       ├── CoffeeFlavourDegreeResponse.java
+│   │       └── CoffeeResponse.java
+│   ├── repository
+│   │   ├── CoffeeFlavourRepository.java
+│   │   ├── CoffeeRepository.java
+│   │   └── querydsl
+│   └── service
+│       └── CoffeeService.java
+├── common
+│   ├── contributor
+│   │   └── CustomFunctionContributor.java
+│   ├── entity
+│   │   ├── BaseEntity.java
+│   │   ├── Degree.java
+│   │   ├── ErrorCode.java
+│   │   ├── Flavour.java
+│   │   └── UserRole.java
+│   ├── exception
+│   │   ├── CommonException.java
+│   │   ├── CommonExceptionHandler.java
+│   │   ├── CommonValidationException.java
+│   │   ├── CustomException.java
+│   │   ├── TokenException.java
+│   │   └── UserException.java
+│   ├── response
+│   │   ├── BasicApiSwaggerResponse.java
+│   │   ├── CommonResponse.java
+│   │   └── ErrorResponse.java
+│   └── validator
+│       └── CommonValidator.java
+├── config
+│   ├── QueryDslConfig.java
+│   ├── SecurityConfig.java
+│   └── SwaggerConfig.java
+├── folder.txt
+├── like
+│   ├── config
+│   │   └── LikeSwaggerConfig.java
+│   ├── controller
+│   │   └── LikeController.java
+│   ├── domain
+│   │   ├── Like.java
+│   │   └── UserCafePK.java
+│   ├── repository
+│   │   └── LikeRepository.java
+│   └── service
+│       └── LikeService.java
+├── mypage
+│   ├── config
+│   │   └── MypageSwaggerConfig.java
+│   ├── controller
+│   │   └── MypageController.java
+│   └── service
+│       └── MyPageService.java
+├── review
+│   ├── controller
+│   │   └── ReviewController.java
+│   ├── domain
+│   │   ├── ReviewRequest.java
+│   │   ├── entity
+│   │   │   └── Review.java
+│   │   └── response
+│   │       └── ReviewResponse.java
+│   ├── repository
+│   │   └── ReviewRepository.java
+│   └── service
+│       └── ReviewService.java
+├── security
+│   ├── handler
+│   │   ├── CustomAccessDeniedHandler.java
+│   │   └── CustomAuthenticationEntryPoint.java
+│   ├── jwt
+│   │   ├── filter
+│   │   │   ├── JwtAuthenticationFilter.java
+│   │   │   └── JwtFailureFilter.java
+│   │   └── util
+│   │       └── JwtTokenProvider.java
+│   └── service
+│       └── CustomUserDetailService.java
+└── user
+    ├── config
+    │   └── UserSwaggerConfig.java
+    ├── controller
+    │   └── UserController.java
+    ├── domain
+    │   ├── entity
+    │   │   ├── User.java
+    │   │   ├── UserFlavour.java
+    │   │   └── UserToken.java
+    │   ├── request
+    │   │   ├── KakaoLoginRequest.java
+    │   │   ├── UserPreferRequest.java
+    │   │   └── UserRequest.java
+    │   └── response
+    │       └── UserResponse.java
+    ├── repository
+    │   ├── UserFlavourRepository.java
+    │   ├── UserRepository.java
+    │   └── UserTokenRepository.java
+    └── service
+        ├── KakaoLoginService.java
+        ├── UserService.java
+        └── UserTokenService.java
+```
+<br/>
+<br/>
