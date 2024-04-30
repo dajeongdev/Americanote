@@ -61,8 +61,16 @@
 <br/>
 
 
+## 🌲 서비스 아키텍처 🌲
+<img width="918" alt="service-architecture" src="https://github.com/dajeongdev/Americanote/assets/61612976/26eccda0-7573-4a6f-8736-049b69d9bc41">
+<br/>
+<br/>
+<br/>
+
+
 ## 🌱 ERD 🌱
 <img width="1134" alt="스크린샷 2024-04-02 22 51 19" src="https://github.com/dajeongdev/Americanote/assets/61612976/13644c7f-da8a-4707-b7cc-ff5ea12b701c">
+<br/>
 <br/>
 <br/>
 
