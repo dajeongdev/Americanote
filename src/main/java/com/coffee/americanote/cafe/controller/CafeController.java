@@ -25,9 +25,9 @@ import java.util.Set;
 @RequestMapping("/api/cafe")
 @RequiredArgsConstructor
 @RestController
-public class CafeController {
+class CafeController {
 
-    public static final String HEADER_STRING = "Authorization";
+    final String HEADER_STRING = "Authorization";
     private final CafeService cafeService;
 
     @Operation(summary = "summary : 모든 카페 조회",

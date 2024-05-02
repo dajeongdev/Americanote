@@ -17,7 +17,7 @@ import org.springframework.http.HttpHeaders;
         )
 )
 @Configuration
-public class SwaggerConfig {
+class SwaggerConfig {
 
     private static final String TOKEN_PREFIX = "Bearer";
 

@@ -23,9 +23,9 @@ import java.util.List;
 @RequestMapping("/api/mypage")
 @RequiredArgsConstructor
 @RestController
-public class MypageController {
+class MypageController {
 
-    public static final String HEADER_STRING = "Authorization";
+    final String HEADER_STRING = "Authorization";
     private final MyPageService myPageService;
 
     @Operation(summary = "summary: 마이페이지 조회",
