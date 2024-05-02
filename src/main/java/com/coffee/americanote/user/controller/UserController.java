@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
 @RestController
-public class UserController {
+class UserController {
 
-    public static final String HEADER_STRING = "Authorization";
+    final String HEADER_STRING = "Authorization";
     private final UserService userService;
 
     @Operation(summary = "summary : 카카오 로그인",

@@ -7,7 +7,7 @@ import org.hibernate.type.StandardBasicTypes;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class CustomFunctionContributor implements FunctionContributor {
+class CustomFunctionContributor implements FunctionContributor {
 
     @Override
     public void contributeFunctions(FunctionContributions functionContributions) {
