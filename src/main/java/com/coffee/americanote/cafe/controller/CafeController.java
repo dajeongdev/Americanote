@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,8 +67,8 @@ class CafeController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/info")
-    ResponseEntity<CommonResponse<CafeDetailResponse>> getCafeDetail(@RequestParam("id") Long id, HttpServletRequest request) {
-        return new ResponseEntity<>(new CommonResponse<>("카페 정보 보기", cafeService.getCafeDetail(id, request.getHeader(HEADER_STRING))), HttpStatus.OK);
+    ResponseEntity<CommonResponse<CafeDetailResponse>> getCafeDetail(@RequestParam("id") Long id) {
+        return new ResponseEntity<>(new CommonResponse<>("카페 정보 보기", cafeService.getCafeDetail(id)), HttpStatus.OK);
     }
 
     @Operation(summary = "summary : 취향에 맞는 카페",
@@ -82,8 +81,8 @@ class CafeController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/recommend")
-    ResponseEntity<CommonResponse<List<CafePreviewResponse>>> getRecommendCafes(HttpServletRequest request) {
-        return new ResponseEntity<>(new CommonResponse<>("추천 카페 리스트", cafeService.getRecommendCafes(request.getHeader(HEADER_STRING))), HttpStatus.OK);
+    ResponseEntity<CommonResponse<List<CafePreviewResponse>>> getRecommendCafes() {
+        return new ResponseEntity<>(new CommonResponse<>("추천 카페 리스트", cafeService.getRecommendCafes()), HttpStatus.OK);
     }
 
     @Operation(summary = "summary : 카페 검색",
@@ -96,11 +95,8 @@ class CafeController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/search")
-    ResponseEntity<CommonResponse<List<CafeSearchResponse>>> getAllSearchCafe(
-            @RequestParam(value = "keyword") String keyword, HttpServletRequest request) {
-        String accessToken = request.getHeader(HEADER_STRING);
-        return new ResponseEntity<>(new CommonResponse<>(
-                "카페 검색 목록 조회", cafeService.getAllSearchCafe(keyword, accessToken)), HttpStatus.OK);
+    ResponseEntity<CommonResponse<List<CafeSearchResponse>>> getAllSearchCafe(@RequestParam(value = "keyword") String keyword) {
+        return new ResponseEntity<>(new CommonResponse<>("카페 검색 목록 조회", cafeService.getAllSearchCafe(keyword)), HttpStatus.OK);
     }
 
     @Operation(summary = "summary : 최근 검색어",
@@ -113,10 +109,8 @@ class CafeController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/recent")
-    ResponseEntity<CommonResponse<List<String>>> getAllRecentSearchWord(HttpServletRequest request) {
-        String accessToken = request.getHeader(HEADER_STRING);
-        return new ResponseEntity<>(new CommonResponse<>(
-                "최근 검색어 조회", cafeService.getAllRecentSearchWord(accessToken)), HttpStatus.OK);
+    ResponseEntity<CommonResponse<List<String>>> getAllRecentSearchWord() {
+        return new ResponseEntity<>(new CommonResponse<>("최근 검색어 조회", cafeService.getAllRecentSearchWord()), HttpStatus.OK);
     }
 
     @Operation(summary = "summary : 검색어 삭제",
@@ -129,10 +123,8 @@ class CafeController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
     @DeleteMapping("/search")
-    ResponseEntity<Void> deleteRecentSearchWord(
-            @RequestParam(value = "keyword") String keyword, HttpServletRequest request) {
-        String accessToken = request.getHeader(HEADER_STRING);
-        cafeService.deleteRecentSearchWord(keyword, accessToken);
+    ResponseEntity<Void> deleteRecentSearchWord(@RequestParam(value = "keyword") String keyword) {
+        cafeService.deleteRecentSearchWord(keyword);
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 }
