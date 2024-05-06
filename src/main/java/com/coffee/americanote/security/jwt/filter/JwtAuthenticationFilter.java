@@ -10,28 +10,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final String[] WHITELIST = {
-            "/",
-            "/swagger-ui.html", // swagger
-            "/swagger-ui/**", // swagger
-            "/api-docs/**", // swagger
-            "/error",
-            "/favicon.ico",
-            "/api/**",
-    };
     private static final String HEADER_STRING = "Authorization";
-    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -39,33 +28,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
         log.info("path = {}", path);
-        if (Arrays.stream(WHITELIST).anyMatch(pattern -> antPathMatcher.match(pattern, path))) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String accessToken = resolveToken(request);
-        validateAndReissueToken(accessToken);
+        log.info("accessToken = {}", accessToken);
+        if (StringUtils.hasText(accessToken)) {
+            if (jwtTokenProvider.validateToken(accessToken)) {
+                Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                log.info("AccessToken is null or expired");
+                String reissueAccessToken = jwtTokenProvider.reissueAccessToken(accessToken);
+                if (reissueAccessToken != null) {
+                    Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
+        }
         filterChain.doFilter(request, response);
     }
 
     private String resolveToken(HttpServletRequest request) {
-        return request.getHeader(HEADER_STRING).substring(7);
-    }
-
-    private void validateAndReissueToken(String accessToken) {
-        if (jwtTokenProvider.validateToken(accessToken)) {
-            setAuthentication(accessToken);
-        } else {
-            String reissueAccessToken = jwtTokenProvider.reissueAccessToken(accessToken);
-            if (reissueAccessToken != null) {
-                setAuthentication(reissueAccessToken);
-            }
+        String bearer = request.getHeader(HEADER_STRING);
+        if (StringUtils.hasText(bearer) && bearer.startsWith("Bearer ")) {
+            return bearer.substring(7);
         }
-    }
-
-    private void setAuthentication(String accessToken) {
-        Authentication authentication = jwtTokenProvider.getAuthentication(accessToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return null;
     }
 }
