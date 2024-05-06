@@ -55,8 +55,7 @@ public class CafeService {
     }
 
     public CafeDetailResponse getCafeDetail(Long cafeId, String token) {
-        CommonValidator.notNullOrThrow(token, ErrorCode.EMPTY_TOKEN.getErrorMessage());
-        Long userId = jwtTokenProvider.getUserId(token);
+        Long userId = token != null ? jwtTokenProvider.getUserId(token) : 0;
         return cafeQueryRepository.getCafeDetail(cafeId, userId);
     }
 
