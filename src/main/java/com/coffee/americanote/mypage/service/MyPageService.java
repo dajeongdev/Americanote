@@ -6,8 +6,7 @@ import com.coffee.americanote.common.entity.Degree;
 import com.coffee.americanote.common.entity.ErrorCode;
 import com.coffee.americanote.common.entity.Flavour;
 import com.coffee.americanote.common.exception.UserException;
-import com.coffee.americanote.common.validator.CommonValidator;
-import com.coffee.americanote.security.jwt.util.JwtTokenProvider;
+import com.coffee.americanote.security.jwt.util.UserIdProvider;
 import com.coffee.americanote.user.domain.entity.User;
 import com.coffee.americanote.user.domain.entity.UserFlavour;
 import com.coffee.americanote.user.domain.request.UserPreferRequest;
@@ -19,7 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,11 +28,10 @@ public class MyPageService {
 
     private final UserRepository userRepository;
     private final UserFlavourRepository userFlavourRepository;
-    private final JwtTokenProvider jwtTokenProvider;
     private final CafeQueryRepository cafeQueryRepository;
 
-    public UserResponse getMyData(String accessToken) {
-        Long userId = checkAccessToken(accessToken);
+    public UserResponse getMyData() {
+        final Long userId = UserIdProvider.getUserIdOrThrow();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
 
@@ -41,8 +40,8 @@ public class MyPageService {
     }
 
     @Transactional
-    public void updatePrefer(String accessToken, UserPreferRequest userPreferRequest) {
-        Long userId = checkAccessToken(accessToken);
+    public void updatePrefer(UserPreferRequest userPreferRequest) {
+        final Long userId = UserIdProvider.getUserIdOrThrow();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserException(ErrorCode.NOT_FOUND_USER));
 
@@ -80,13 +79,8 @@ public class MyPageService {
         return newUserFlavours;
     }
 
-    public List<CafeSearchResponse> getAllUserLikeCafe(String accessToken) {
-        Long userId = checkAccessToken(accessToken);
+    public List<CafeSearchResponse> getAllUserLikeCafe() {
+        final Long userId = UserIdProvider.getUserIdOrThrow();
         return cafeQueryRepository.getAllUserLikeCafe(userId);
-    }
-
-    private Long checkAccessToken(String accessToken) {
-        CommonValidator.notNullOrThrow(accessToken, ErrorCode.EMPTY_TOKEN.getErrorMessage());
-        return jwtTokenProvider.getUserId(accessToken);
     }
 }

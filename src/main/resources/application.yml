@@ -1,7 +1,6 @@
 # 서버 포트
 server:
   port: 8009
-  url: http://223.130.141.221:8009
 
 spring:
   jpa:
