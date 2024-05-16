@@ -17,7 +17,7 @@ import com.coffee.americanote.common.entity.ErrorCode;
 import com.coffee.americanote.common.validator.CommonValidator;
 import com.coffee.americanote.review.domain.entity.Review;
 import com.coffee.americanote.review.repository.ReviewRepository;
-import com.coffee.americanote.security.jwt.util.JwtTokenProvider;
+import com.coffee.americanote.security.jwt.util.UserIdProvider;
 import com.coffee.americanote.user.domain.entity.User;
 import com.coffee.americanote.user.domain.entity.UserFlavour;
 import com.coffee.americanote.user.repository.UserRepository;
@@ -38,7 +38,6 @@ public class CafeService {
     private final CoffeeRepository coffeeRepository;
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
-    private final JwtTokenProvider jwtTokenProvider;
     private final CafeQueryRepository cafeQueryRepository;
     private final RecentSearchRepository recentSearchRepository;
 
@@ -54,15 +53,13 @@ public class CafeService {
         return cafeQueryRepository.getAllFilteringCafe(request);
     }
 
-    public CafeDetailResponse getCafeDetail(Long cafeId, String token) {
-        CommonValidator.notNullOrThrow(token, ErrorCode.EMPTY_TOKEN.getErrorMessage());
-        Long userId = jwtTokenProvider.getUserId(token);
+    public CafeDetailResponse getCafeDetail(Long cafeId) {
+        final Long userId = UserIdProvider.getUserIdOrDefault();
         return cafeQueryRepository.getCafeDetail(cafeId, userId);
     }
 
-    public List<CafePreviewResponse> getRecommendCafes(String token) {
-        CommonValidator.notNullOrThrow(token, ErrorCode.EMPTY_TOKEN.getErrorMessage());
-        Long userId = jwtTokenProvider.getUserId(token);
+    public List<CafePreviewResponse> getRecommendCafes() {
+        final Long userId = UserIdProvider.getUserIdOrThrow();
         Optional<User> findUser = userRepository.findByIdWithFlavours(userId);
         CommonValidator.notNullOrThrow(findUser, ErrorCode.NOT_FOUND_USER.getErrorMessage());
         User user = findUser.get();
@@ -82,8 +79,7 @@ public class CafeService {
         return createRecommendCafeResponseList(topCoffees, user);
     }
 
-    private HashMap<Coffee, Double> calculatePriorities(User user, List<UserFlavour> userFlavours,
-                                                        List<Coffee> allCoffeeData) {
+    private HashMap<Coffee, Double> calculatePriorities(User user, List<UserFlavour> userFlavours, List<Coffee> allCoffeeData) {
         HashMap<Coffee, Double> priorityMap = new HashMap<>();
         allCoffeeData.forEach(coffee -> {
             priorityMap.put(coffee, calculatePriorityForMatchingAttributes(coffee, user, userFlavours));
@@ -91,8 +87,7 @@ public class CafeService {
         return priorityMap;
     }
 
-    private double calculatePriorityForMatchingAttributes(Coffee coffee, User user,
-                                                           List<UserFlavour> userFlavours) {
+    private double calculatePriorityForMatchingAttributes(Coffee coffee, User user, List<UserFlavour> userFlavours) {
         // 향 일치 개수
         double priority = coffee.getFlavours().stream()
                 .flatMap(flavour -> userFlavours.stream()
@@ -140,8 +135,8 @@ public class CafeService {
     }
 
     @Transactional
-    public List<CafeSearchResponse> getAllSearchCafe(String keyword, String accessToken) {
-        Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
+    public List<CafeSearchResponse> getAllSearchCafe(String keyword) {
+        final Long userId = UserIdProvider.getUserIdOrDefault();
         if (userId != 0) {
             saveSearchKeyword(keyword, userId);
         }
@@ -159,17 +154,16 @@ public class CafeService {
         }
     }
 
-    public List<String> getAllRecentSearchWord(String accessToken) {
-        Long userId = accessToken != null ? jwtTokenProvider.getUserId(accessToken) : 0;
+    public List<String> getAllRecentSearchWord() {
+        final Long userId = UserIdProvider.getUserIdOrDefault();
         return recentSearchRepository.findAllByUserIdOrderByCreatedDateAsc(userId)
                 .stream().map(RecentSearch::getSearchWord).toList();
     }
 
     @Transactional
-    public void deleteRecentSearchWord(String keyword, String accessToken) {
-        CommonValidator.notNullOrThrow(accessToken, ErrorCode.INVALID_TOKEN.getErrorMessage());
+    public void deleteRecentSearchWord(String keyword) {
         CommonValidator.hasTextOrThrow(keyword, ErrorCode.NOT_FOUND_KEYWORD.getErrorMessage());
-        Long userId = jwtTokenProvider.getUserId(accessToken);
+        final Long userId = UserIdProvider.getUserIdOrThrow();
 
         RecentSearch deleteEntity = recentSearchRepository.findByUserIdAndSearchWord(userId, keyword);
         recentSearchRepository.delete(deleteEntity);

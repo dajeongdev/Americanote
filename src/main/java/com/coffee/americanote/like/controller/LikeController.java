@@ -5,7 +5,6 @@ import com.coffee.americanote.like.service.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/like")
 @RequiredArgsConstructor
 @RestController
-public class LikeController {
+class LikeController {
 
     private final LikeService likeService;
 
@@ -34,8 +33,8 @@ public class LikeController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
     @PostMapping("")
-    ResponseEntity<Void> toggleLike(@RequestParam("cafeId") Long cafeId, HttpServletRequest request) {
-        likeService.toggleLike(cafeId, request);
+    ResponseEntity<Void> toggleLike(@RequestParam("cafeId") Long cafeId) {
+        likeService.toggleLike(cafeId);
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 }

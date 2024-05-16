@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,9 +22,9 @@ import java.util.List;
 @RequestMapping("/api/mypage")
 @RequiredArgsConstructor
 @RestController
-public class MypageController {
+class MypageController {
 
-    public static final String HEADER_STRING = "Authorization";
+    final String HEADER_STRING = "Authorization";
     private final MyPageService myPageService;
 
     @Operation(summary = "summary: 마이페이지 조회",
@@ -38,9 +37,8 @@ public class MypageController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("")
-    ResponseEntity<CommonResponse<UserResponse>> getMyData(HttpServletRequest request) {
-        return new ResponseEntity<>(new CommonResponse<>(
-                "마이페이지", myPageService.getMyData(request.getHeader(HEADER_STRING))), HttpStatus.OK);
+    ResponseEntity<CommonResponse<UserResponse>> getMyData() {
+        return new ResponseEntity<>(new CommonResponse<>("마이페이지", myPageService.getMyData()), HttpStatus.OK);
     }
 
     @Operation(summary = "summary: 내 취향 커피 고르기",
@@ -54,8 +52,8 @@ public class MypageController {
     @BasicApiSwaggerResponse
     @ApiResponse(responseCode = "200")
     @PutMapping("/choose-prefer")
-    ResponseEntity<Void> updatePrefer(@Valid @RequestBody UserPreferRequest userPreferRequest, HttpServletRequest request){
-        myPageService.updatePrefer(request.getHeader(HEADER_STRING), userPreferRequest);
+    ResponseEntity<Void> updatePrefer(@Valid @RequestBody UserPreferRequest userPreferRequest){
+        myPageService.updatePrefer(userPreferRequest);
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
@@ -67,10 +65,9 @@ public class MypageController {
                     - 좋아요한 카페 목록
                     """)
     @BasicApiSwaggerResponse
-    @ApiResponse(responseCode = "200", content = @Content(mediaType = "applicaion/json"))
+    @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json"))
     @GetMapping("/like")
-    ResponseEntity<CommonResponse<List<CafeSearchResponse>>> getAllUserLikeCafe(HttpServletRequest request) {
-        return new ResponseEntity<>(new CommonResponse<>("마이페이지 좋아요 목록 조회",
-                myPageService.getAllUserLikeCafe(request.getHeader(HEADER_STRING))), HttpStatus.OK);
+    ResponseEntity<CommonResponse<List<CafeSearchResponse>>> getAllUserLikeCafe() {
+        return new ResponseEntity<>(new CommonResponse<>("마이페이지 좋아요 목록 조회", myPageService.getAllUserLikeCafe()), HttpStatus.OK);
     }
 }
